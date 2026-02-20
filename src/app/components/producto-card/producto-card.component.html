@@ -1,0 +1,12 @@
+<article class="card">
+    <img src="{{products.imageUrl}}" class ="img" alt="{{products.name}}">
+    <div class="body">
+        <h2>{{products.name}}</h2>
+        <p>Price: ${{products.price}}</p>
+    </div>
+    <p class ="meta">ID: {{products.id}}</p>
+    <p class="desc">{{products.description}}</p>
+    <p class="stock"></p>
+    @if(products.inStock){En Stock}
+    @else {Agotado}
+</article>
