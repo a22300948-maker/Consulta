@@ -1,0 +1,23 @@
+<header>
+
+<h1>Carrito</h1>
+<button class="genrarxml" (click)="generateXML()">Generar XML</button>
+</header>
+
+<section class="cart">
+
+@for(p of products; track p.id){
+
+<div class="cart-item">
+
+<img [src]="p.imageUrl">
+
+<h2>{{p.name}}</h2>
+
+<p>{{p.price}}</p>
+
+</div>
+
+}
+
+</section>

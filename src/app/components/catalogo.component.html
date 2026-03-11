@@ -1,12 +1,15 @@
 <router-outlet></router-outlet>
 
-<header class ="header">
+<header class="header">
     <h1>Catálogo</h1>
-
+    <button class="cart-button" (click)="goToCart()">Go to Cart</button>
 </header>
 
-<section class = "grid">
+<section class="grid">
     @for(p of products; track p.id){
-        <app-producto-card [products]="p"></app-producto-card>
+        <app-producto-card 
+            [products]="p"
+            (add)="addToCart($event)">
+        </app-producto-card>
     }
 </section>

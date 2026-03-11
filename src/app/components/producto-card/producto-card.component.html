@@ -1,3 +1,4 @@
+
 <article class="card">
     <img src="{{products.imageUrl}}" class ="img" alt="{{products.name}}">
     <div class="body">
@@ -9,4 +10,6 @@
     <p class="stock"></p>
     @if(products.inStock){En Stock}
     @else {Agotado}
+    <button class="add-to-cart" (click)="addToCart()">Add to Cart</button>
+    
 </article>
