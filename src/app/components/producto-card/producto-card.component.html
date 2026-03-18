@@ -7,9 +7,10 @@
     </div>
     <p class ="meta">ID: {{products.id}}</p>
     <p class="desc">{{products.description}}</p>
-    <p class="stock"></p>
-    @if(products.inStock){En Stock}
-    @else {Agotado}
+    <p class="stock" [class.in-stock]="products.inStock" [class.out-of-stock]="!products.inStock">
+        @if(products.inStock){En Stock}
+        @else {Agotado}
+    </p>
     <button class="add-to-cart" (click)="addToCart()">Add to Cart</button>
     
 </article>
