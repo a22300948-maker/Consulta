@@ -14,6 +14,7 @@ import { RouterOutlet, Router } from "@angular/router";
 export class CatalogoComponent {
 
     products: Products[] = [];
+    counter = 0;
 
     constructor(
         private productoService: ProductoService,
@@ -27,5 +28,6 @@ export class CatalogoComponent {
     }
     addToCart(product: Products) {
         this.productoService.addToCart(product);
+        this.counter++;
     }
 }

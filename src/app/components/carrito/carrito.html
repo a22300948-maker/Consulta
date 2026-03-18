@@ -4,19 +4,30 @@
 
 <header class="header">
     <h1>Carrito de Compras</h1>
-    <button class="cart-button" (click)="generateXML()">Generar XML</button>
+    <button class="cart-button" (click)="buy()">Comprar</button>
 </header>
 
 <section class="grid">
-    @for(p of products; track p.id){
+    @for(item of cartItems; track item.product.id){
         <div class="cart-item">
-            <img [src]="p.imageUrl" alt="{{p.name}}">
-            <h2>{{p.name}}</h2>
-            <p>{{p.price}}</p>
+            <img [src]="item.product.imageUrl" alt="{{item.product.name}}">
+            <div class="item-info">
+                <h2>{{item.product.name}}</h2>
+                <p class="price">Precio unitario: ${{item.product.price.toFixed(2)}}</p>
+                <p class="quantity">Cantidad: {{item.quantity}}</p>
+                <p class="subtotal">Subtotal: ${{item.subtotal.toFixed(2)}}</p>
+            </div>
+            <button class="remove-btn" (click)="removeItem(item.product.id)">Eliminar</button>
         </div>
     }
 </section>
 
-@if(products.length === 0){
+@if(cartItems.length === 0){
     <div class="empty-cart">El mercado está vacío 🏺</div>
+} @else {
+    <div class="totals">
+        <p><strong>Total:</strong> ${{total.toFixed(2)}}</p>
+        <p><strong>IVA (16%):</strong> ${{iva.toFixed(2)}}</p>
+        <p><strong>Total + IVA:</strong> ${{(total + iva).toFixed(2)}}</p>
+    </div>
 }

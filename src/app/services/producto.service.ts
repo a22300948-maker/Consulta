@@ -134,26 +134,40 @@ export class ProductoService {
       inStock: true
     }
   ];
-
-  // 🔴 carrito
+  
   private cart: Products[] = [];
 
   getAll(): Products[] {
     return this.products;
   }
 
-  // agregar al carrito
-  addToCart(product: Products){
+  addToCart(product: Products) {
     this.cart.push(product);
   }
 
-  // obtener carrito
-  getCart(): Products[]{
+  getCart(): Products[] {
     return this.cart;
   }
 
-  // eliminar del carrito
-  removeFromCart(id:number){
-    this.cart = this.cart.filter(p => p.id !== id);
+  // Obtener resumen del carrito (producto, cantidad, subtotal)
+  getCartSummary(): { product: Products; quantity: number; subtotal: number }[] {
+    const summary = new Map<number, { product: Products; quantity: number }>();
+    this.cart.forEach(item => {
+      const existing = summary.get(item.id);
+      if (existing) {
+        existing.quantity++;
+      } else {
+        summary.set(item.id, { product: item, quantity: 1 });
+      }
+    });
+    return Array.from(summary.values()).map(item => ({
+      ...item,
+      subtotal: item.product.price * item.quantity
+    }));
+  }
+
+  // Eliminar todas las ocurrencias de un producto del carrito
+  removeProductFromCart(productId: number) {
+    this.cart = this.cart.filter(p => p.id !== productId);
   }
 }
