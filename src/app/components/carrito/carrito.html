@@ -1,23 +1,22 @@
-    <header>
+<div class="banner">
+    <h2>Walmart Romano</h2>
+</div>
 
-    <h1>Carrito</h1>
-    <button class="genrarxml" (click)="generateXML()">Generar XML</button>
-    </header>
+<header class="header">
+    <h1>Carrito de Compras</h1>
+    <button class="cart-button" (click)="generateXML()">Generar XML</button>
+</header>
 
-    <section class="cart">
-
+<section class="grid">
     @for(p of products; track p.id){
+        <div class="cart-item">
+            <img [src]="p.imageUrl" alt="{{p.name}}">
+            <h2>{{p.name}}</h2>
+            <p>{{p.price}}</p>
+        </div>
+    }
+</section>
 
-    <div class="cart-item">
-
-    <img [src]="p.imageUrl">
-
-    <h2>{{p.name}}</h2>
-
-    <p>{{p.price}}</p>
-
-    </div>
-
-    }   
-
-    </section>
+@if(products.length === 0){
+    <div class="empty-cart">El mercado está vacío 🏺</div>
+}
