@@ -12,6 +12,7 @@ export class ProductoService {
   
   getAllFromApi(): Observable<Products[]> {
     return this.http.get<Products[]>(this.apiUrl);
+    console.log('Productos obtenidos de la API');
   }
 
   private products: Products[] = [
