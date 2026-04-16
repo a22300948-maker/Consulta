@@ -10,14 +10,13 @@
 </header>
 
 <section class="grid">
-
-    @for(p of products; track p.id){
-
-        <app-producto-card 
-            [products]="p"
-            (add)="addToCart($event)">
-        </app-producto-card>
-
+    @if (products$ | async; as products) {
+        @for (p of products; track p.id) {
+            <app-producto-card
+                [products]="p"
+                (add)="addToCart($event)">
+            </app-producto-card>
+        }
     }
 
 </section>

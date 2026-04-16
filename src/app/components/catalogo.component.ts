@@ -1,27 +1,25 @@
-import { Component } from "@angular/core";
+import { AsyncPipe } from '@angular/common';
+import { Component, inject } from "@angular/core";
 import { ProductoCardComponent } from "./producto-card/producto-card.component";
 import { ProductoService } from "../services/producto.service";
 import { Products } from "../models/producto.model";
 import { RouterOutlet, Router } from "@angular/router";
+import { Observable } from 'rxjs';
 
 @Component({
     selector: 'app-catalogo',
     standalone: true,
-    imports: [ProductoCardComponent, RouterOutlet],
+    imports: [AsyncPipe, ProductoCardComponent, RouterOutlet],
     templateUrl: './catalogo.component.html',
     styleUrl: './catalogo.component.css'
 })
 export class CatalogoComponent {
 
-    products: Products[] = [];
-    counter = 0;
+    private productoService = inject(ProductoService);
+    private router = inject(Router);
 
-    constructor(
-        private productoService: ProductoService,
-        private router: Router
-    ) {
-        this.products = this.productoService.getAll();
-    }
+    products$: Observable<Products[]> = this.productoService.getAllFromApi();
+    counter = 0;
 
     goToCart() {
         this.router.navigate(['/carrito']);
