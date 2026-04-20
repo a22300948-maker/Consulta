@@ -1,6 +1,16 @@
 const db= require('../config/db');
 const getProductos = (req,res)=>{
-    const sql = 'SELECT * FROM productos';
+    const sql = `
+        SELECT
+            id_prod AS id,
+            name,
+            price,
+            imageURL AS imageUrl,
+            category,
+            description,
+            inStock
+        FROM producto
+    `;
     db.query(sql,(err,results)=>{
         if(err)
             return res.status(500).json({error: 'Error al obtener los productos'});
