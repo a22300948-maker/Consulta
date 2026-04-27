@@ -1,6 +1,9 @@
-import { createPaypalOrder, capturePaypalOrder } from '../services/paypal.service.js';
+const {
+  createPaypalOrder,
+  capturePaypalOrder,
+} = require('../services/paypal.service');
 
-export async function createOrder(req, res) {
+async function createOrder(req, res) {
   try {
     const { items, total } = req.body;
 
@@ -32,9 +35,9 @@ export async function createOrder(req, res) {
   }
 }
 
-export async function captureOrder(req, res) {
+async function captureOrder(req, res) {
   try {
-    const { orderId } = req.body;
+    const orderId = req.body?.orderId ?? req.body?.orderID;
 
     if (!orderId) {
       return res.status(400).json({
@@ -54,3 +57,5 @@ export async function captureOrder(req, res) {
     });
   }
 }
+
+module.exports = { createOrder, captureOrder };

@@ -4,7 +4,7 @@
 
 <header class="header">
     <h1>Carrito de Compras</h1>
-    <button class="cart-button" (click)="buy()">Comprar</button>
+    <button class="cart-button" (click)="buy()">Pagar con PayPal</button>
 </header>
 
 <section class="grid">
@@ -29,5 +29,37 @@
         <p><strong>Total:</strong> ${{total.toFixed(2)}}</p>
         <p><strong>IVA (16%):</strong> ${{iva.toFixed(2)}}</p>
         <p><strong>Total + IVA:</strong> ${{(total + iva).toFixed(2)}}</p>
+
+        @if(paymentError){
+            <p class="payment-error">{{paymentError}}</p>
+        }
+
+        @if(paymentSuccess){
+            <p class="payment-success">{{paymentSuccess}}</p>
+        }
+
+        <!-- El contenedor de PayPal ahora se muestra en un modal overlay -->
+    </div>
+}
+
+@if(overlayOpen){
+    <div class="paypal-overlay" (click)="closeOverlay()">
+        <div class="paypal-modal" (click)="$event.stopPropagation()">
+            <button class="close-x" (click)="closeOverlay()">✕</button>
+
+            @if(!paypalReady){
+                <div class="paypal-loading">Cargando PayPal...</div>
+            }
+
+            <div id="paypal-button-container" class="paypal-container"></div>
+
+            @if(paymentError){
+                <p class="payment-error">{{paymentError}}</p>
+            }
+
+            @if(paymentSuccess){
+                <p class="payment-success">{{paymentSuccess}}</p>
+            }
+        </div>
     </div>
 }

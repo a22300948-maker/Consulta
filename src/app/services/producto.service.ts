@@ -23,6 +23,10 @@ export class ProductoService {
     return this.cart;
   }
 
+  clearCart() {
+    this.cart = [];
+  }
+
   // Obtener resumen del carrito (producto, cantidad, subtotal)
   getCartSummary(): { product: Products; quantity: number; subtotal: number }[] {
     const summary = new Map<number, { product: Products; quantity: number }>();

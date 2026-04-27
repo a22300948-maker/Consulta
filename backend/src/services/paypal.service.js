@@ -1,4 +1,4 @@
-import { paypalConfig } from '../config/paypal.config.js';
+const { paypalConfig } = require('../config/paypal.config');
 
 function getBasicAuth() {
   return Buffer
@@ -6,7 +6,7 @@ function getBasicAuth() {
     .toString('base64');
 }
 
-export async function getAccessToken() {
+async function getAccessToken() {
   const response = await fetch(`${paypalConfig.baseUrl}/v1/oauth2/token`, {
     method: 'POST',
     headers: {
@@ -25,7 +25,7 @@ export async function getAccessToken() {
   return data.access_token;
 }
 
-export async function createPaypalOrder(orderData) {
+async function createPaypalOrder(orderData) {
   const accessToken = await getAccessToken();
 
   const body = {
@@ -43,11 +43,11 @@ export async function createPaypalOrder(orderData) {
           }
         },
         items: orderData.items.map(item => ({
-          name: item.nombre,
-          quantity: String(item.cantidad),
+          name: item.nombre ?? item.name,
+          quantity: String(item.cantidad ?? item.quantity ?? 1),
           unit_amount: {
             currency_code: 'MXN',
-            value: Number(item.precio).toFixed(2)
+            value: Number(item.precio ?? item.price).toFixed(2)
           }
         }))
       }
@@ -72,7 +72,7 @@ export async function createPaypalOrder(orderData) {
   return data;
 }
 
-export async function capturePaypalOrder(orderId) {
+async function capturePaypalOrder(orderId) {
   const accessToken = await getAccessToken();
 
   const response = await fetch(
@@ -94,4 +94,10 @@ export async function capturePaypalOrder(orderId) {
 
   return data;
 }
+
+module.exports = {
+  getAccessToken,
+  createPaypalOrder,
+  capturePaypalOrder,
+};
 
