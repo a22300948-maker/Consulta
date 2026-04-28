@@ -2,6 +2,8 @@ import { AsyncPipe } from '@angular/common';
 import { Component, inject, OnInit } from "@angular/core";
 import { ProductoCardComponent } from "./producto-card/producto-card.component";
 import { ProductoService } from "../services/producto.service";
+import { PaypalService } from "../services/paypal.service";
+import { firstValueFrom } from 'rxjs';
 import { Products } from "../models/producto.model";
 import { RouterOutlet, Router } from "@angular/router";
 import { Observable } from 'rxjs';
@@ -17,6 +19,7 @@ export class CatalogoComponent implements OnInit {
 
     private productoService = inject(ProductoService);
     private router = inject(Router);
+    private paypalService = inject(PaypalService);
 
     products$: Observable<Products[]> = this.productoService.getAllFromApi();
     counter = 0;
@@ -27,13 +30,8 @@ export class CatalogoComponent implements OnInit {
 
     private async loadPaypalSdk() {
         try {
-            const res = await fetch('/api/paypal/client-id');
-            if (!res.ok) {
-                console.warn('PayPal client id not available from backend');
-                return;
-            }
-            const data = await res.json();
-            const clientId = data?.clientId ?? data?.clientID ?? data?.clientid;
+            const data = await firstValueFrom(this.paypalService.getClientId());
+            const clientId = (data as any)?.clientId ?? (data as any)?.clientID ?? (data as any)?.clientid;
             if (!clientId) {
                 console.warn('PayPal client id missing in response');
                 return;

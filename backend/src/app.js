@@ -7,5 +7,5 @@ app.use(cors());
 app.use(express.json());
 app.use('/api', productosRoutes);
 const paypalRouter = require('./router/paypal.router');
-app.use('/api', paypalRouter);
+app.use('/api/paypal', paypalRouter);
 module.exports = app;

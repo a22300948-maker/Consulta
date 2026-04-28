@@ -133,15 +133,17 @@ export class Carrito {
       return;
     }
 
-    // Try to obtain client-id from backend; fallback to environment
-    let clientId = environment.paypalClientID;
+    // Obtain client-id from backend (required). If unavailable, fail so UI shows error.
+    let clientId: string | undefined;
     try {
       const res = await firstValueFrom(this.paypalService.getClientId());
-      if (res?.clientId) {
-        clientId = res.clientId;
-      }
+      clientId = res?.clientId;
     } catch (err) {
-      console.warn('No se pudo obtener client id desde backend, usando environment:', err);
+      console.warn('No se pudo obtener client id desde backend:', err);
+    }
+
+    if (!clientId) {
+      throw new Error('No PayPal client id available from backend');
     }
 
     const script = document.createElement('script');
