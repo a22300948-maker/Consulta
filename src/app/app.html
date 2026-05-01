@@ -4,6 +4,22 @@
 <!-- Toast global -->
 <div class="toast" [class.show]="toastVisible">{{toastMessage}}</div>
 
+@if(selectedProduct){
+	<div class="product-modal-overlay" (click)="closeProductModal()">
+		<div class="product-modal" (click)="$event.stopPropagation()">
+			<button class="modal-close" (click)="closeProductModal()">✕</button>
+			<div class="modal-body">
+				<img [src]="selectedProduct.imageUrl" alt="{{selectedProduct.name}}" class="modal-img" />
+				<div class="modal-info">
+					<h2>{{selectedProduct.name}}</h2>
+					<p class="modal-price">Precio: ${{selectedProduct.price.toFixed(2)}}</p>
+					<p class="modal-desc">{{selectedProduct.description}}</p>
+				</div>
+			</div>
+		</div>
+	</div>
+}
+
 <footer class="site-footer">
 	<div class="site-footer-inner">
 		<p class="brand">Walmart Romano</p>

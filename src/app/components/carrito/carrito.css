@@ -212,6 +212,11 @@
     font-size: 16px;
 }
 
+.cart-qty-controls .qty-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 .cart-qty-controls .quantity {
     min-width: 28px;
     text-align: center;

@@ -80,15 +80,17 @@ export class Carrito {
   }
 
   increaseOne(product: Products) {
+    if (!product.inStock) {
+      this.productoService.cartNotify$.next(`${product.name} está agotado`);
+      return;
+    }
     this.productoService.addToCart(product, 1);
-    this.productoService.cartNotify$.next(`1 × ${product.name} añadido`);
     this.loadCart();
   }
 
   decreaseOne(product: Products) {
     const removed = this.productoService.removeOne(product.id);
     if (removed) {
-      this.productoService.cartNotify$.next(`1 × ${product.name} eliminado`);
       this.loadCart();
     }
   }

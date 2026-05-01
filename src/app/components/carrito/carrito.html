@@ -1,5 +1,5 @@
 <div class="banner">
-    <h2><a href="/" class="brand-link">Walmart Romano</a></h2>
+    <h2><a routerLink="/" class="brand-link">Walmart Romano</a></h2>
 </div>
 
 <header class="header">
@@ -15,9 +15,9 @@
                 <p class="price">Precio unitario: ${{item.product.price.toFixed(2)}}</p>
                 <div class="cart-qty-row">
                     <div class="cart-qty-controls">
-                        <button class="qty-btn" (click)="decreaseOne(item.product)">−</button>
+                        <button class="qty-btn" (click)="decreaseOne(item.product)" [disabled]="item.quantity <= 0" title="Eliminar">−</button>
                         <span class="quantity">{{item.quantity}}</span>
-                        <button class="qty-btn" (click)="increaseOne(item.product)">+</button>
+                        <button class="qty-btn" (click)="increaseOne(item.product)" [disabled]="!item.product.inStock" title="{{ item.product.inStock ? 'Añadir' : 'Agotado' }}">+</button>
                     </div>
                     <p class="subtotal">Subtotal: ${{item.subtotal.toFixed(2)}}</p>
                 </div>

@@ -13,6 +13,8 @@ export class ProductoService {
   public cartAdd$ = new Subject<{ product: Products; quantity: number }>();
   // Notificaciones generales (añadir, eliminar, vaciar)
   public cartNotify$ = new Subject<string>();
+  // Emite cuando cambia el contenido del carrito (añadir/quitar/vaciar)
+  public cartChanged$ = new Subject<void>();
   // Key localStorage
   private storageKey = 'walmart_romano_cart_v1';
   
@@ -29,13 +31,20 @@ export class ProductoService {
    * Añade `quantity` unidades del producto al carrito.
    * Emite un evento en `cartAdd$` para notificaciones.
    */
-  addToCart(product: Products, quantity = 1) {
+  addToCart(product: Products, quantity = 1, notify = true) {
+    // No permitir añadir si no hay stock
+    if (!product.inStock) {
+      if (notify) this.cartNotify$.next(`${product.name} está agotado`);
+      return;
+    }
+
     for (let i = 0; i < quantity; i++) {
       this.cart.push(product);
     }
     this.saveCartToStorage();
     this.cartAdd$.next({ product, quantity });
-    this.cartNotify$.next(`${quantity} × ${product.name} añadido`);
+    if (notify) this.cartNotify$.next(`${quantity} × ${product.name} añadido`);
+    this.cartChanged$.next();
   }
 
   getCart(): Products[] {
@@ -46,6 +55,7 @@ export class ProductoService {
     this.cart = [];
     this.saveCartToStorage();
     this.cartNotify$.next('Carrito vaciado');
+    this.cartChanged$.next();
   }
 
   // Obtener resumen del carrito (producto, cantidad, subtotal)
@@ -66,13 +76,14 @@ export class ProductoService {
   }
 
   // Eliminar todas las ocurrencias de un producto del carrito
-  removeProductFromCart(productId: number) {
+  removeProductFromCart(productId: number, notify = true) {
     const before = this.cart.length;
     const toRemove = this.cart.filter(p => p.id === productId).length;
     this.cart = this.cart.filter(p => p.id !== productId);
     if (toRemove > 0) {
       this.saveCartToStorage();
-      this.cartNotify$.next(`${toRemove} × elemento(s) eliminados`);
+      if (notify) this.cartNotify$.next(`${toRemove} × elemento(s) eliminados`);
+      this.cartChanged$.next();
     }
   }
 
@@ -80,12 +91,13 @@ export class ProductoService {
    * Elimina una unidad del producto (si existe) del carrito.
    * Retorna `true` si se eliminó algo.
    */
-  removeOne(productId: number): boolean {
+  removeOne(productId: number, notify = true): boolean {
     const idx = this.cart.findIndex(p => p.id === productId);
     if (idx === -1) return false;
     this.cart.splice(idx, 1);
     this.saveCartToStorage();
-    this.cartNotify$.next(`1 × elemento eliminado`);
+    if (notify) this.cartNotify$.next(`1 × elemento eliminado`);
+    this.cartChanged$.next();
     return true;
   }
 

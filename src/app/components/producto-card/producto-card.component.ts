@@ -1,5 +1,8 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, inject } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { Products } from '../../models/producto.model';
+import { ProductoService } from '../../services/producto.service';
+import { ModalService } from '../../services/modal.service';
 
 @Component({
     selector: 'app-producto-card',
@@ -7,36 +10,47 @@ import { Products } from '../../models/producto.model';
     templateUrl: './producto-card.component.html',
     styleUrl: './producto-card.component.css'
 })
-export class ProductoCardComponent {
+export class ProductoCardComponent implements OnInit, OnDestroy {
 
     @Input({ required: true }) products!: Products;
 
-    @Output() add = new EventEmitter<{ product: Products; quantity: number }>();
+    private productoService = inject(ProductoService);
+    private modalService = inject(ModalService);
+    private subs: Subscription[] = [];
 
-    // Cantidad seleccionada por el usuario (por defecto 1)
-    quantity = 1;
+    countInCart = 0;
+
+    ngOnInit(): void {
+        this.updateCount();
+        this.subs.push(this.productoService.cartChanged$.subscribe(() => this.updateCount()));
+    }
+
+    ngOnDestroy(): void {
+        this.subs.forEach(s => s.unsubscribe());
+    }
+
+    private updateCount() {
+        const all = this.productoService.getCart();
+        this.countInCart = all.filter(p => p.id === this.products.id).length;
+    }
 
     increase() {
-        if (this.quantity < 999) this.quantity++;
+        if (!this.products.inStock) {
+            this.productoService.cartNotify$.next(`${this.products.name} está agotado`);
+            return;
+        }
+        // silent add (no toast)
+        this.productoService.addToCart(this.products, 1, false);
     }
 
     decrease() {
-        if (this.quantity > 1) this.quantity--;
+        if (this.countInCart <= 0) return;
+        // silent remove (no toast)
+        this.productoService.removeOne(this.products.id, false);
     }
 
-    addToCart(){
-        this.add.emit({ product: this.products, quantity: this.quantity });
-    }
-
-    // Modal para mostrar detalles del producto
-    showModal = false;
-
-    openModal() {
-        this.showModal = true;
-    }
-
-    closeModal() {
-        this.showModal = false;
+    openDetail() {
+        this.modalService.open(this.products);
     }
 
 }
