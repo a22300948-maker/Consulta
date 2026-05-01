@@ -24,8 +24,17 @@ export class CatalogoComponent {
     goToCart() {
         this.router.navigate(['/carrito']);
     }
-    addToCart(product: Products) {
-        this.productoService.addToCart(product);
-        this.counter++;
+    addToCart(payload: Products | { product: Products; quantity: number }) {
+        // soportar ambos formatos por compatibilidad
+        if ((payload as any).product) {
+            const p = (payload as any).product as Products;
+            const q = (payload as any).quantity as number || 1;
+            this.productoService.addToCart(p, q);
+            this.counter += q;
+        } else {
+            const p = payload as Products;
+            this.productoService.addToCart(p, 1);
+            this.counter++;
+        }
     }
 }

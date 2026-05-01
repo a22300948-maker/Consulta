@@ -15,6 +15,22 @@
     letter-spacing: 3px;
 }
 
+.banner h2 { margin: 0; }
+
+.banner a.brand-link {
+    color: #fff;
+    text-decoration: none;
+    font-family: 'Cinzel', Georgia, serif;
+    font-weight: 700;
+    font-size: 22px;
+    letter-spacing: 2px;
+}
+
+.banner a.brand-link:hover {
+    text-decoration: underline;
+    opacity: 0.95;
+}
+
 /* Header */
 .header {
     display: flex;

@@ -1,8 +1,8 @@
 
 <article class="card">
-    <img src="{{products.imageUrl}}" class ="img" alt="{{products.name}}">
+    <img src="{{products.imageUrl}}" class ="img" alt="{{products.name}}" (click)="openModal()">
     <div class="body">
-        <h2>{{products.name}}</h2>
+        <h2 (click)="openModal()">{{products.name}}</h2>
         <p>Price: ${{products.price}}</p>
     </div>
     <p class ="meta">ID: {{products.id}}</p>
@@ -11,6 +11,29 @@
         @if(products.inStock){En Stock}
         @else {Agotado}
     </p>
-    <button class="add-to-cart" (click)="addToCart()">Add to Cart</button>
+    <div class="qty-row">
+        <div class="qty-controls">
+            <button class="qty-btn" type="button" (click)="decrease()">−</button>
+            <input class="qty-input" type="number" min="1" [value]="quantity" (input)="quantity = +($any($event.target).value || 1)" />
+            <button class="qty-btn" type="button" (click)="increase()">+</button>
+        </div>
+        <button class="add-to-cart" (click)="addToCart()">Add {{quantity}}</button>
+    </div>
     
 </article>
+
+@if(showModal){
+    <div class="product-modal-overlay" (click)="closeModal()">
+        <div class="product-modal" (click)="$event.stopPropagation()">
+            <button class="modal-close" (click)="closeModal()">✕</button>
+            <div class="modal-body">
+                <img src="{{products.imageUrl}}" alt="{{products.name}}" class="modal-img">
+                <div class="modal-info">
+                    <h2>{{products.name}}</h2>
+                    <p class="modal-price">Precio: ${{products.price.toFixed(2)}}</p>
+                    <p class="modal-desc">{{products.description}}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+}

@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Products } from '../models/producto.model';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -9,14 +9,33 @@ import { Observable } from 'rxjs';
 export class ProductoService {
   private http = inject(HttpClient);
   private apiUrl = 'http://localhost:3000/api/productos';
+  // Emite eventos cuando se añaden productos al carrito
+  public cartAdd$ = new Subject<{ product: Products; quantity: number }>();
+  // Notificaciones generales (añadir, eliminar, vaciar)
+  public cartNotify$ = new Subject<string>();
+  // Key localStorage
+  private storageKey = 'walmart_romano_cart_v1';
   
   getAllFromApi(): Observable<Products[]> {
     return this.http.get<Products[]>(this.apiUrl);
   }
   private cart: Products[] = [];
 
-  addToCart(product: Products) {
-    this.cart.push(product);
+  constructor() {
+    this.loadCartFromStorage();
+  }
+
+  /**
+   * Añade `quantity` unidades del producto al carrito.
+   * Emite un evento en `cartAdd$` para notificaciones.
+   */
+  addToCart(product: Products, quantity = 1) {
+    for (let i = 0; i < quantity; i++) {
+      this.cart.push(product);
+    }
+    this.saveCartToStorage();
+    this.cartAdd$.next({ product, quantity });
+    this.cartNotify$.next(`${quantity} × ${product.name} añadido`);
   }
 
   getCart(): Products[] {
@@ -25,6 +44,8 @@ export class ProductoService {
 
   clearCart() {
     this.cart = [];
+    this.saveCartToStorage();
+    this.cartNotify$.next('Carrito vaciado');
   }
 
   // Obtener resumen del carrito (producto, cantidad, subtotal)
@@ -46,6 +67,45 @@ export class ProductoService {
 
   // Eliminar todas las ocurrencias de un producto del carrito
   removeProductFromCart(productId: number) {
+    const before = this.cart.length;
+    const toRemove = this.cart.filter(p => p.id === productId).length;
     this.cart = this.cart.filter(p => p.id !== productId);
+    if (toRemove > 0) {
+      this.saveCartToStorage();
+      this.cartNotify$.next(`${toRemove} × elemento(s) eliminados`);
+    }
+  }
+
+  /**
+   * Elimina una unidad del producto (si existe) del carrito.
+   * Retorna `true` si se eliminó algo.
+   */
+  removeOne(productId: number): boolean {
+    const idx = this.cart.findIndex(p => p.id === productId);
+    if (idx === -1) return false;
+    this.cart.splice(idx, 1);
+    this.saveCartToStorage();
+    this.cartNotify$.next(`1 × elemento eliminado`);
+    return true;
+  }
+
+  private saveCartToStorage() {
+    try {
+      localStorage.setItem(this.storageKey, JSON.stringify(this.cart));
+    } catch (err) {
+      console.warn('No se pudo guardar el carrito en localStorage', err);
+    }
+  }
+
+  private loadCartFromStorage() {
+    try {
+      const raw = localStorage.getItem(this.storageKey);
+      if (raw) {
+        const parsed = JSON.parse(raw) as Products[];
+        if (Array.isArray(parsed)) this.cart = parsed;
+      }
+    } catch (err) {
+      console.warn('No se pudo leer el carrito desde localStorage', err);
+    }
   }
 }

@@ -1,2 +1,17 @@
 
-<router-outlet />
+<router-outlet></router-outlet>
+
+<!-- Toast global -->
+<div class="toast" [class.show]="toastVisible">{{toastMessage}}</div>
+
+<footer class="site-footer">
+	<div class="site-footer-inner">
+		<p class="brand">Walmart Romano</p>
+		<nav class="footer-links">
+			<a routerLink="/">Inicio</a>
+			<a routerLink="/catalogo">Catálogo</a>
+			<a routerLink="/carrito">Carrito</a>
+		</nav>
+		<p class="copy">© Walmart Romano</p>
+	</div>
+</footer>

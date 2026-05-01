@@ -1,1 +1,77 @@
-/* You can add global styles to this file, and also import other style files */
+/* Global base styles and footer for a Roman-inspired aesthetic */
+
+/* Import note: headings use 'Cinzel' (loaded in index.html) */
+
+body {
+	margin: 0;
+	font-family: Georgia, 'Times New Roman', serif;
+	background-color: #fbf7f0;
+	color: #3b2f2f;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+a { color: inherit; }
+
+/* Footer */
+.site-footer {
+	background: linear-gradient(180deg, #efe6d1, #e9dbc4);
+	border-top: 1px solid #d4b483;
+	padding: 18px 12px;
+	text-align: center;
+	color: #5a3e1b;
+	font-size: 14px;
+}
+.site-footer .brand {
+	font-family: 'Cinzel', Georgia, serif;
+	font-weight: 700;
+	margin: 0 0 6px 0;
+	letter-spacing: 1px;
+}
+.site-footer .footer-links {
+	margin: 6px 0 8px 0;
+	display: flex;
+	gap: 12px;
+	justify-content: center;
+	flex-wrap: wrap;
+}
+.site-footer .footer-links a {
+	color: #5a3e1b;
+	text-decoration: none;
+	padding: 6px 10px;
+	border-radius: 6px;
+}
+.site-footer .footer-links a:hover {
+	background: rgba(201,162,39,0.10);
+}
+.site-footer .copy { margin-top: 6px; color: #7a5b3b; }
+
+/* Small container utility used by footer */
+.site-footer-inner { max-width: 1100px; margin: 0 auto; }
+
+/* Make product cards and buttons a touch friendlier across the app */
+button { font-family: inherit; }
+
+/* Toast notification (top-right) */
+.toast {
+	position: fixed;
+	top: 20px;
+	right: 20px;
+	background: linear-gradient(135deg, #ffffff, #fff8e7);
+	color: #3b2f2f;
+	padding: 12px 16px;
+	border-radius: 10px;
+	border: 1px solid #d4b483;
+	box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+	transform: translateY(-10px) scale(0.98);
+	opacity: 0;
+	transition: transform 220ms cubic-bezier(.2,.9,.3,1), opacity 220ms ease;
+	font-weight: 700;
+	z-index: 1200;
+}
+.toast.show {
+	transform: translateY(0) scale(1);
+	opacity: 1;
+}
+
+

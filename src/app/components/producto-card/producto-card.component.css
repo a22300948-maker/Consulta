@@ -89,3 +89,87 @@
     background: gray;
     cursor: not-allowed;
 }
+
+/* Quantity controls */
+.qty-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.qty-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.qty-btn {
+    background: transparent;
+    border: 1px solid #d4b483;
+    padding: 6px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.qty-input {
+    width: 56px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    border: 1px solid #d4b483;
+    text-align: center;
+}
+
+.add-to-cart {
+    min-width: 84px;
+}
+
+/* Modal styles */
+.product-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1100;
+}
+
+.product-modal {
+    background: #fff8e7;
+    border-radius: 12px;
+    padding: 18px;
+    max-width: 860px;
+    width: 92%;
+    box-shadow: 0 18px 50px rgba(0,0,0,0.35);
+    position: relative;
+}
+
+.product-modal .modal-close {
+    background: transparent;
+    border: none;
+    font-size: 20px;
+    position: absolute;
+    right: 16px;
+    top: 10px;
+    cursor: pointer;
+}
+
+.product-modal .modal-body {
+    display: flex;
+    gap: 18px;
+    align-items: flex-start;
+}
+
+.product-modal .modal-img {
+    width: 320px;
+    height: 320px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 2px solid #d4b483;
+}
+
+.product-modal .modal-info h2 { margin: 0 0 8px 0; font-family: 'Cinzel', Georgia, serif; }
+.product-modal .modal-price { color: #a8841f; font-weight: 700; margin-bottom: 8px; }
+.product-modal .modal-desc { color: #5a3e1b; line-height: 1.4; }

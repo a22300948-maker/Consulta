@@ -74,8 +74,39 @@ export class Carrito {
   }
 
   removeItem(productId: number) {
-    this.productoService.removeProductFromCart(productId);
+    // Mantener por compatibilidad: eliminar una unidad
+    this.productoService.removeOne(productId);
     this.loadCart(); // refrescar vista
+  }
+
+  increaseOne(product: Products) {
+    this.productoService.addToCart(product, 1);
+    this.productoService.cartNotify$.next(`1 × ${product.name} añadido`);
+    this.loadCart();
+  }
+
+  decreaseOne(product: Products) {
+    const removed = this.productoService.removeOne(product.id);
+    if (removed) {
+      this.productoService.cartNotify$.next(`1 × ${product.name} eliminado`);
+      this.loadCart();
+    }
+  }
+
+  confirmRemoveAll(productId: number) {
+    const item = this.cartItems.find(i => i.product.id === productId);
+    if (!item) return;
+    const should = confirm(`Eliminar ${item.quantity} × ${item.product.name} del carrito?`);
+    if (!should) return;
+    this.productoService.removeProductFromCart(productId);
+    this.loadCart();
+  }
+
+  confirmClearCart() {
+    const should = confirm('¿Vaciar el carrito por completo?');
+    if (!should) return;
+    this.productoService.clearCart();
+    this.loadCart();
   }
 
   buy() {
