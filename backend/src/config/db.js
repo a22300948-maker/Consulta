@@ -1,17 +1,37 @@
-const mysql = require('mysql2');
+// config/db.js
+const sqlite3 = require('sqlite3');
 const path = require('path');
-require('dotenv').config({ path: path.resolve(__dirname, '../../env.env') });
-const conexion = mysql.createConnection({
-    host: process.env.DB_HOST,
-    user:process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database:process.env.DB_NAME
-});
-conexion.connect((err)=>{
-    if(err){
-        console.error('Error al conectar a la base de datos:', err);
+const initializeDatabase = require('../database/initDb');
+
+// Ruta donde estará el archivo .db (dentro de la carpeta database)
+const DB_PATH = path.resolve(__dirname, '../database/database.db');
+
+// Crear/abrir la base de datos
+const db = new sqlite3.Database(DB_PATH, (err) => {
+    if (err) {
+        console.error('Error al conectar a SQLite:', err.message);
         return;
     }
-    console.log('Conexión a la base de datos establecida');
+    console.log('Conexión a SQLite establecida:', DB_PATH);
+
+    // initializeDatabase();
 });
-module.exports = conexion;
+
+// Método query personalizado para emular la interfaz de mysql2
+// Recibe SQL y callback (err, rows)
+db.query = function(sql, callback) {
+    // Para consultas SELECT usamos db.all()
+    if (sql.trim().toLowerCase().startsWith('select')) {
+        this.all(sql, (err, rows) => {
+            callback(err, rows);
+        });
+    } else {
+        // Para INSERT, UPDATE, DELETE usamos db.run()
+        this.run(sql, function(err) {
+            // this.lastID y this.changes disponibles si se necesitan
+            callback(err, null);
+        });
+    }
+};
+
+module.exports = db;
