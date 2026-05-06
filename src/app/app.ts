@@ -1,8 +1,8 @@
 import { Component, signal, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { ProductoService } from './services/producto.service';
-import { ModalService } from './services/modal.service';
-import { Products } from './models/producto.model';
+import { ProductoService } from './Servicios/producto.service';
+import { ModalService } from './Servicios/modal.service';
+import { Products } from './Modelos/producto.model';
 
 @Component({
   selector: 'app-root',

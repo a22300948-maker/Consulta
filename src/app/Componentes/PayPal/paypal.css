@@ -1,0 +1,50 @@
+.paypal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.paypal-modal {
+    background: #fff8e7;
+    border-radius: 12px;
+    padding: 20px 24px 28px;
+    width: 95%;
+    max-width: 520px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.45);
+    position: relative;
+}
+
+.paypal-modal .close-x {
+    position: absolute;
+    right: 10px;
+    top: 8px;
+    background: transparent;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.paypal-container {
+    margin-top: 8px;
+}
+
+.paypal-loading {
+    padding: 28px 0;
+    text-align: center;
+    color: #5a3e1b;
+    font-weight: 700;
+}
+
+.payment-error {
+    color: #9b1c1c;
+    font-weight: 700;
+}
+
+.payment-success {
+    color: #0f6b3d;
+    font-weight: 700;
+}

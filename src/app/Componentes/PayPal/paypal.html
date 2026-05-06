@@ -1,0 +1,21 @@
+@if(true){
+    <div class="paypal-overlay" (click)="onClose()">
+        <div class="paypal-modal" (click)="$event.stopPropagation()">
+            <button class="close-x" (click)="onClose()">✕</button>
+
+            @if(!paypalReady){
+                <div class="paypal-loading">Cargando PayPal...</div>
+            }
+
+            <div id="paypal-button-container" class="paypal-container"></div>
+
+            @if(paymentError){
+                <p class="payment-error">{{paymentError}}</p>
+            }
+
+            @if(paymentSuccess){
+                <p class="payment-success">{{paymentSuccess}}</p>
+            }
+        </div>
+    </div>
+}
