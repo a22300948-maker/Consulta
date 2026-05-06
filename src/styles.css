@@ -123,4 +123,10 @@ button { font-family: inherit; }
 .product-modal .modal-price { color: #a8841f; font-weight: 700; margin-bottom: 8px; }
 .product-modal .modal-desc { color: #5a3e1b; line-height: 1.4; }
 
+/* Modal ID and qty controls */
+.product-modal .modal-id { color: #7a5b3b; font-size: 13px; margin-bottom: 6px; }
+.product-modal .modal-qty-row { display:flex; gap:8px; align-items:center; margin:8px 0 12px 0 }
+.product-modal .modal-qty-row .qty-btn { background: transparent; border: 1px solid #d4b483; padding:6px 10px; border-radius:6px; cursor:pointer }
+.product-modal .modal-qty-row .qty-input { width:72px; text-align:center; padding:6px 8px; border-radius:6px; border:1px solid #d4b483 }
+
 

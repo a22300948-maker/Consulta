@@ -12,7 +12,13 @@
 				<img [src]="selectedProduct.imageUrl" alt="{{selectedProduct.name}}" class="modal-img" />
 				<div class="modal-info">
 					<h2>{{selectedProduct.name}}</h2>
+					<p class="modal-id">ID: {{selectedProduct.id}}</p>
 					<p class="modal-price">Precio: ${{selectedProduct.price.toFixed(2)}}</p>
+					<div class="modal-qty-row">
+						<button class="qty-btn" (click)="decreaseProduct(selectedProduct)">−</button>
+						<input class="qty-input" type="number" min="0" [value]="getProductQty(selectedProduct.id)" (input)="onModalQtyInput($event)" (blur)="onModalQtyCommit(selectedProduct)" (keydown.enter)="onModalQtyCommit(selectedProduct)">
+						<button class="qty-btn" (click)="increaseProduct(selectedProduct)">+</button>
+					</div>
 					<p class="modal-desc">{{selectedProduct.description}}</p>
 				</div>
 			</div>

@@ -19,6 +19,7 @@ export class ProductoCardComponent implements OnInit, OnDestroy {
     private subs: Subscription[] = [];
 
     countInCart = 0;
+    private pendingQty: string | null = null;
 
     ngOnInit(): void {
         this.updateCount();
@@ -45,12 +46,50 @@ export class ProductoCardComponent implements OnInit, OnDestroy {
 
     decrease() {
         if (this.countInCart <= 0) return;
+        // If only one left, confirm before removing
+        if (this.countInCart <= 1) {
+            const should = confirm(`Eliminar la última unidad de ${this.products.name}?`);
+            if (!should) return;
+            this.productoService.removeOne(this.products.id, true);
+            return;
+        }
         // silent remove (no toast)
         this.productoService.removeOne(this.products.id, false);
     }
 
+    onQtyInput(ev: Event) {
+        const el = ev.target as HTMLInputElement;
+        const cleaned = (el.value || '').replace(/\D+/g, '');
+        el.value = cleaned;
+        this.pendingQty = cleaned;
+        this.countInCart = cleaned === '' ? 0 : parseInt(cleaned, 10);
+    }
+
+    onQtyCommit() {
+        const q = this.pendingQty !== null ? (parseInt(this.pendingQty, 10) || 0) : this.countInCart;
+        const newQty = Math.max(0, q);
+        if (newQty === 0) {
+            const should = confirm(`Eliminar ${this.products.name} del carrito por completo?`);
+            if (!should) {
+                // restore count
+                this.updateCount();
+                this.pendingQty = null;
+                return;
+            }
+        }
+        this.productoService.setProductQuantity(this.products, newQty);
+        this.pendingQty = null;
+    }
+
     openDetail() {
         this.modalService.open(this.products);
+    }
+
+    get truncatedDesc() {
+        if (!this.products?.description) return '';
+        const max = 90;
+        if (this.products.description.length <= max) return this.products.description;
+        return this.products.description.slice(0, max).trim() + '...';
     }
 
 }

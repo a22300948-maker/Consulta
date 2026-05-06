@@ -101,6 +101,41 @@ export class ProductoService {
     return true;
   }
 
+  /**
+   * Establece la cantidad exacta para un producto en el carrito.
+   * Si `quantity` es 0 elimina el producto por completo.
+   */
+  setProductQuantity(product: Products, quantity: number, notify = true) {
+    if (typeof quantity !== 'number' || isNaN(quantity)) {
+      return;
+    }
+    if (quantity < 0) quantity = 0;
+    const current = this.cart.filter(p => p.id === product.id).length;
+    if (quantity === current) return;
+    if (quantity === 0) {
+      this.removeProductFromCart(product.id, notify);
+      return;
+    }
+    if (quantity > current) {
+      const toAdd = quantity - current;
+      for (let i = 0; i < toAdd; i++) {
+        if (!product.inStock) break;
+        this.cart.push(product);
+      }
+    } else {
+      let toRemove = current - quantity;
+      while (toRemove > 0) {
+        const idx = this.cart.findIndex(p => p.id === product.id);
+        if (idx === -1) break;
+        this.cart.splice(idx, 1);
+        toRemove--;
+      }
+    }
+    this.saveCartToStorage();
+    if (notify) this.cartNotify$.next(`Cantidad actualizada: ${quantity} × ${product.name}`);
+    this.cartChanged$.next();
+  }
+
   private saveCartToStorage() {
     try {
       localStorage.setItem(this.storageKey, JSON.stringify(this.cart));

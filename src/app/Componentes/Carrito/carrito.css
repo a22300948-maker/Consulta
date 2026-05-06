@@ -62,11 +62,12 @@
     transform: scale(1.05);
 }
 
-.grid {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    padding: 30px 40px;
+.cart-layout {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 24px;
+    padding: 20px 32px;
+    align-items: start;
 }
 
 .cart-item {
@@ -165,17 +166,17 @@
 .remove-btn {
     background: #c94f4f;
     border: none;
-    padding: 8px 15px;
+    padding: 8px 12px;
     color: white;
     font-weight: bold;
     border-radius: 8px;
     cursor: pointer;
-    transition: 0.3s;
+    transition: 0.12s ease;
 }
 
 .remove-btn:hover {
     background: #a33d3d;
-    transform: scale(1.05);
+    transform: translateY(-1px);
 }
 
 .cart-qty-row {
@@ -206,21 +207,59 @@
     cursor: not-allowed;
 }
 
+.qty-input {
+    width: 56px;
+    text-align: center;
+    font-weight: 700;
+    border: 1px solid #d4b483;
+    border-radius: 6px;
+    padding: 6px 8px;
+}
+
 .cart-qty-controls .quantity {
     min-width: 28px;
     text-align: center;
     font-weight: 700;
 }
 
-.totals {
+.right-col .totals {
     text-align: right;
-    margin: 30px 40px;
+    margin: 0;
     padding: 20px;
     background: #fff8e7;
     border: 2px solid #d4b483;
-    border-radius: 15px;
+    border-radius: 12px;
     font-size: 18px;
     color: #5a3e1b;
+    position: sticky;
+    top: 20px;
+}
+
+/* gentle floating animation to give a subtle motion while sticky */
+@keyframes floatSubtle {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+    100% { transform: translateY(0); }
+}
+
+/* animate only when not fixed */
+.right-col .totals:not(.fixed) {
+    animation: floatSubtle 6s ease-in-out infinite;
+}
+
+/* placeholder to preserve layout when totals becomes fixed */
+.right-col .totals-placeholder {
+    display: block;
+    height: 0px;
+    width: 100%;
+}
+
+/* fixed state styles */
+.right-col .totals.fixed {
+    box-shadow: 0 14px 40px rgba(0,0,0,0.12);
+    border-radius: 12px;
+    transform-origin: top left;
+    transition: box-shadow 200ms ease, transform 200ms ease;
 }
 
 .totals p {
@@ -291,16 +330,18 @@
 }
 
 .totals .clear-btn {
-    background: transparent;
-    border: 1px solid #d4b483;
-    color: #5a3e1b;
+    background: #d9534f;
+    border: none;
+    color: white;
     padding: 10px 16px;
     border-radius: 10px;
     cursor: pointer;
 }
 
+.totals .clear-btn:hover { background: #c13b3b }
+
 .totals .confirm-btn {
-    background: linear-gradient(135deg, #c9a227, #a8841f);
+    background: linear-gradient(135deg, #4caf50, #2e7d32);
     border: none;
     color: white;
     padding: 12px 22px;
@@ -308,7 +349,7 @@
     font-weight: 800;
     font-size: 16px;
     cursor: pointer;
-    box-shadow: 0 8px 22px rgba(0,0,0,0.18);
+    box-shadow: 0 8px 22px rgba(0,0,0,0.12);
 }
 
 .totals .confirm-btn:hover { transform: translateY(-2px); }

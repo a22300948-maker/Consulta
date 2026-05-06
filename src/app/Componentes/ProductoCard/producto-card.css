@@ -119,3 +119,12 @@
     font-weight: 700;
     color: #5a3e1b;
 }
+
+.cart-count-input {
+    width: 56px;
+    text-align: center;
+    font-weight: 700;
+    border: 1px solid #d4b483;
+    border-radius: 6px;
+    padding: 6px 8px;
+}

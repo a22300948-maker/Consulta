@@ -21,6 +21,7 @@ export class App {
 
   toastMessage = '';
   toastVisible = false;
+  private modalPendingQty = '';
 
   constructor() {
     // Mensajes generales del carrito (eliminar/vaciar)
@@ -35,10 +36,49 @@ export class App {
   showToast(msg: string) {
     this.toastMessage = msg;
     this.toastVisible = true;
-    setTimeout(() => (this.toastVisible = false), 2400);
+    setTimeout(() => (this.toastVisible = false), 2000);
   }
 
   closeProductModal() {
     this.modalService.close();
+  }
+
+  // Modal quantity helpers
+  getProductQty(productId: number) {
+    return this.productoService.getCart().filter(p => p.id === productId).length;
+  }
+
+  increaseProduct(product: Products) {
+    this.productoService.addToCart(product, 1);
+  }
+
+  decreaseProduct(product: Products) {
+    const qty = this.getProductQty(product.id);
+    if (qty <= 1) {
+      const should = confirm(`Eliminar la última unidad de ${product.name}?`);
+      if (!should) return;
+    }
+    this.productoService.removeOne(product.id);
+  }
+
+  onModalQtyInput(ev: Event) {
+    const el = ev.target as HTMLInputElement;
+    const cleaned = (el.value || '').replace(/\D+/g, '');
+    el.value = cleaned;
+    this.modalPendingQty = cleaned;
+  }
+
+  onModalQtyCommit(product: Products) {
+    const q = this.modalPendingQty === '' ? this.getProductQty(product.id) : (parseInt(this.modalPendingQty, 10) || 0);
+    const newQty = Math.max(0, q);
+    if (newQty === 0) {
+      const should = confirm(`Eliminar ${product.name} del carrito por completo?`);
+      if (!should) {
+        this.modalPendingQty = '';
+        return;
+      }
+    }
+    this.productoService.setProductQuantity(product, newQty);
+    this.modalPendingQty = '';
   }
 }
