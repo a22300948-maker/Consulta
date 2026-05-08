@@ -6,12 +6,13 @@
 
 <header class="header">
     <h1>Catálogo</h1>
+
+    <div class="catalog-search">
+        <input type="search" placeholder="Buscar (coincidencia exacta: nombre o categoría)" (input)="onSearchInput($event)" />
+    </div>
+
     <button class="cart-button" (click)="goToCart()">({{counter}}) Go to Cart</button>
 </header>
-
-<div class="catalog-search">
-    <input type="search" placeholder="Buscar (coincidencia exacta: nombre o categoría)" (input)="onSearchInput($event)" />
-</div>
 
 <section class="grid">
     <div *ngIf="!displayedProducts || displayedProducts.length === 0" class="no-products">

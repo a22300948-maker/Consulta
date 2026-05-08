@@ -1,4 +1,5 @@
-import { Component, signal, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Component, NgZone } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { ProductoService } from './Servicios/producto.service';
 import { ModalService } from './Servicios/modal.service';
@@ -6,16 +7,14 @@ import { Products } from './Modelos/producto.model';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, CommonModule],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
 export class App {
-  protected readonly title = signal('Consulta');
+  protected readonly title = 'Consulta';
 
-  private productoService = inject(ProductoService);
-  private modalService = inject(ModalService);
-
+    
   selectedProduct: Products | null = null;
   modalVisible = false;
 
@@ -23,7 +22,7 @@ export class App {
   toastVisible = false;
   private modalPendingQty = '';
 
-  constructor() {
+  constructor(private productoService: ProductoService, private modalService: ModalService, private zone: NgZone) {
     // Mensajes generales del carrito (eliminar/vaciar)
     this.productoService.cartNotify$.subscribe((msg) => this.showToast(msg));
     // Modal product details

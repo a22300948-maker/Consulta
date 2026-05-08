@@ -13,7 +13,7 @@ import { PaypalComponent } from '../PayPal/paypal';
   templateUrl: './carrito.html',
   styleUrl: './carrito.css'
 })
-export class Carrito {
+export class CarritoComponent {
   private productoService = inject(ProductoService);
   private carritoService = inject(CarritoService);
   private cdr = inject(ChangeDetectorRef);
