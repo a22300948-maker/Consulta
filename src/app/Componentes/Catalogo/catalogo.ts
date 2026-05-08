@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy } from "@angular/core";
+import { Component, inject, OnInit, OnDestroy, AfterViewInit, ChangeDetectorRef } from "@angular/core";
 import { CommonModule } from '@angular/common';
 import { ProductoCardComponent } from '../ProductoCard/producto-card';
 import { ProductoService } from "../../Servicios/producto.service";
@@ -13,9 +13,10 @@ import { Subscription } from 'rxjs';
   templateUrl: './catalogo.html',
   styleUrls: ['./catalogo.css']
 })
-export class CatalogoComponent implements OnInit, OnDestroy {
+export class CatalogoComponent implements OnInit, OnDestroy, AfterViewInit {
   private productoService = inject(ProductoService);
   private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
 
   products: Products[] = [];
   displayedProducts: Products[] = [];
@@ -32,18 +33,34 @@ export class CatalogoComponent implements OnInit, OnDestroy {
     this.productoService.getAllFromApi().subscribe({
       next: list => {
         this.products = list || [];
-        this.displayedProducts = [...this.products];
+        this.applySearch();
+        this.cdr.detectChanges();
       },
       error: err => {
         console.error('Error cargando productos desde API:', err);
         this.products = [];
         this.displayedProducts = [];
+        this.cdr.detectChanges();
       }
     });
   }
 
   ngOnDestroy(): void {
     this.subs.forEach(s => s.unsubscribe());
+  }
+
+  ngAfterViewInit(): void {
+    // Clear any browser-autofill or leftover value in the search input
+    try {
+      const input = document.getElementById('catalog-search-input') as HTMLInputElement | null;
+      if (input) {
+        // ensure the input reflects the component state (avoid browser autofill restoring weird values)
+        input.value = this.searchQuery || '';
+      }
+    } catch (e) {
+      // ignore
+    }
+    this.cdr.detectChanges();
   }
 
   goToCart(): void {
@@ -62,7 +79,8 @@ export class CatalogoComponent implements OnInit, OnDestroy {
 
   applySearch(): void {
     const q = (this.searchQuery || '').trim().toLowerCase();
-    if (!q) {
+    // Treat literal strings 'null' and 'undefined' (sometimes injected by autofill) as empty
+    if (!q || q === 'null' || q === 'undefined') {
       this.displayedProducts = [...this.products];
       return;
     }

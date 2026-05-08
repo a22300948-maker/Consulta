@@ -8,7 +8,7 @@
     <h1>Catálogo</h1>
 
     <div class="catalog-search">
-        <input type="search" placeholder="Buscar (coincidencia exacta: nombre o categoría)" (input)="onSearchInput($event)" />
+        <input id="catalog-search-input" type="search" placeholder="Buscar (coincidencia exacta: nombre o categoría)" (input)="onSearchInput($event)" [value]="searchQuery" autocomplete="off" spellcheck="false" />
     </div>
 
     <button class="cart-button" (click)="goToCart()">({{counter}}) Go to Cart</button>
