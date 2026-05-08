@@ -7,28 +7,26 @@
 </header>
 <div class="cart-layout">
     <div class="left-col">
-        @if(cartItems.length === 0){
-            <div class="empty-cart">El mercado está vacío 🏺</div>
-        } @else {
-            @for(item of cartItems; track item.product.id){
-                <div class="cart-item">
-                    <img [src]="item.product.imageUrl" alt="{{item.product.name}}">
-                    <div class="item-info">
-                        <h2>{{item.product.name}}</h2>
-                        <p class="price">Precio unitario: ${{item.product.price.toFixed(2)}}</p>
-                        <div class="cart-qty-row">
-                            <div class="cart-qty-controls">
-                                <button class="qty-btn" (click)="onDecreaseClick(item)" title="Eliminar">−</button>
-                                <input class="qty-input" type="number" min="0" [value]="item.quantity" (input)="onQtyInput(item,$event)" (blur)="onQtyCommit(item)" (keydown.enter)="onQtyCommit(item)">
-                                <button class="qty-btn" (click)="increaseOne(item.product)" [disabled]="!item.product.inStock" title="{{ item.product.inStock ? 'Añadir' : 'Agotado' }}">+</button>
-                            </div>
-                            <p class="subtotal">Subtotal: ${{item.subtotal.toFixed(2)}}</p>
+        <div *ngIf="cartItems.length === 0" class="empty-cart">El mercado está vacío 🏺</div>
+
+        <ng-container *ngIf="cartItems.length > 0">
+            <div *ngFor="let item of cartItems" class="cart-item">
+                <img [src]="item.product.imageUrl" alt="{{item.product.name}}">
+                <div class="item-info">
+                    <h2>{{item.product.name}}</h2>
+                    <p class="price">Precio unitario: ${{item.product.price.toFixed(2)}}</p>
+                    <div class="cart-qty-row">
+                        <div class="cart-qty-controls">
+                            <button class="qty-btn" (click)="onDecreaseClick(item)" title="Eliminar">−</button>
+                            <input class="qty-input" type="number" min="0" [value]="item.quantity" (input)="onQtyInput(item,$event)" (blur)="onQtyCommit(item)" (keydown.enter)="onQtyCommit(item)">
+                            <button class="qty-btn" (click)="increaseOne(item.product)" [disabled]="!(item.product.inStock > 0)" title="{{ item.product.inStock > 0 ? 'Añadir' : 'Agotado' }}">+</button>
                         </div>
+                        <p class="subtotal">Subtotal: ${{item.subtotal.toFixed(2)}}</p>
                     </div>
-                    <button class="remove-btn" (click)="confirmRemoveAll(item.product.id)">Eliminar</button>
                 </div>
-            }
-        }
+                <button class="remove-btn" (click)="confirmRemoveAll(item.product.id)">Eliminar</button>
+            </div>
+        </ng-container>
     </div>
 
     <div class="right-col">
@@ -37,13 +35,9 @@
             <p><strong>IVA (16%):</strong> ${{iva.toFixed(2)}}</p>
             <p><strong>Total + IVA:</strong> ${{(total + iva).toFixed(2)}}</p>
 
-            @if(paymentError){
-                <p class="payment-error">{{paymentError}}</p>
-            }
+            <p *ngIf="paymentError" class="payment-error">{{paymentError}}</p>
 
-            @if(paymentSuccess){
-                <p class="payment-success">{{paymentSuccess}}</p>
-            }
+            <p *ngIf="paymentSuccess" class="payment-success">{{paymentSuccess}}</p>
 
             <div class="totals-actions">
                 <button class="clear-btn" (click)="confirmClearCart()">Vaciar carrito</button>
@@ -55,6 +49,4 @@
     </div>
 </div>
 
-@if(overlayOpen){
-    <app-paypal [cartItems]="cartItems" (approved)="onPaypalApproved()" (error)="onPaypalError($event)" (close)="closeOverlay()"></app-paypal>
-}
+<app-paypal *ngIf="overlayOpen" [cartItems]="cartItems" (approved)="onPaypalApproved()" (error)="onPaypalError($event)" (close)="closeOverlay()"></app-paypal>

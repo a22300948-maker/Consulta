@@ -1,4 +1,5 @@
 import { Component, inject, ChangeDetectorRef, AfterViewInit, OnDestroy } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { ProductoService } from '../../Servicios/producto.service';
 import { CarritoService } from '../../Servicios/carrito.service';
 import { Products } from '../../Modelos/producto.model';
@@ -8,7 +9,7 @@ import { PaypalComponent } from '../PayPal/paypal';
 @Component({
   selector: 'app-carrito',
   standalone: true,
-  imports: [PaypalComponent],
+  imports: [CommonModule, PaypalComponent],
   templateUrl: './carrito.html',
   styleUrl: './carrito.css'
 })
@@ -51,7 +52,8 @@ export class Carrito {
   }
 
   increaseOne(product: Products) {
-    if (!product.inStock) {
+    const stock = typeof product.inStock === 'number' ? product.inStock : 0;
+    if (stock <= 0) {
       this.productoService.cartNotify$.next(`${product.name} está agotado`);
       return;
     }

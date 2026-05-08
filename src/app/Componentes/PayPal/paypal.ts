@@ -1,4 +1,5 @@
 import { Component, Input, Output, EventEmitter, inject, ChangeDetectorRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { PaypalService } from '../../Servicios/paypal.service';
 import { Products } from '../../Modelos/producto.model';
 import { environment } from '../../../environments/environment';
@@ -19,7 +20,8 @@ interface PaypalButtonActions {
   selector: 'app-paypal',
   standalone: true,
   templateUrl: './paypal.html',
-  styleUrl: './paypal.css'
+  styleUrl: './paypal.css',
+  imports: [CommonModule]
 })
 export class PaypalComponent {
   @Input() cartItems: { product: Products; quantity: number; subtotal: number }[] = [];

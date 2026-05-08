@@ -1,4 +1,5 @@
 import { Component, Input, OnInit, OnDestroy, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { Products } from '../../Modelos/producto.model';
 import { ProductoService } from '../../Servicios/producto.service';
@@ -8,7 +9,8 @@ import { ModalService } from '../../Servicios/modal.service';
     selector: 'app-producto-card',
     standalone: true,
     templateUrl: './producto-card.html',
-    styleUrl: './producto-card.css'
+    styleUrl: './producto-card.css',
+    imports: [CommonModule]
 })
 export class ProductoCardComponent implements OnInit, OnDestroy {
 
@@ -36,7 +38,8 @@ export class ProductoCardComponent implements OnInit, OnDestroy {
     }
 
     increase() {
-        if (!this.products.inStock) {
+        const stock = typeof this.products.inStock === 'number' ? this.products.inStock : 0;
+        if (stock <= 0) {
             this.productoService.cartNotify$.next(`${this.products.name} está agotado`);
             return;
         }
@@ -86,10 +89,11 @@ export class ProductoCardComponent implements OnInit, OnDestroy {
     }
 
     get truncatedDesc() {
-        if (!this.products?.description) return '';
+        // Prefer short description field when available
+        const text = this.products?.sDescription || this.products?.description || '';
         const max = 90;
-        if (this.products.description.length <= max) return this.products.description;
-        return this.products.description.slice(0, max).trim() + '...';
+        if (text.length <= max) return text;
+        return text.slice(0, max).trim() + '...';
     }
 
 }

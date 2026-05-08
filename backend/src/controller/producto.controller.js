@@ -7,6 +7,7 @@ const getProductos = (req,res)=>{
             price,
             imageURL AS imageUrl,
             category,
+            sDescription AS sDescription,
             description,
             inStock
         FROM producto

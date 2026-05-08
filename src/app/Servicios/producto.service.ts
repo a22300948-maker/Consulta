@@ -32,18 +32,30 @@ export class ProductoService {
    * Emite un evento en `cartAdd$` para notificaciones.
    */
   addToCart(product: Products, quantity = 1, notify = true) {
-    // No permitir añadir si no hay stock
-    if (!product.inStock) {
+    // No permitir añadir si no hay stock (inStock es número)
+    const stock = typeof product.inStock === 'number' ? product.inStock : 0;
+    if (stock <= 0) {
       if (notify) this.cartNotify$.next(`${product.name} está agotado`);
       return;
     }
 
-    for (let i = 0; i < quantity; i++) {
+    const current = this.cart.filter(p => p.id === product.id).length;
+    const available = Math.max(0, stock - current);
+    if (available <= 0) {
+      if (notify) this.cartNotify$.next(`${product.name} no tiene unidades disponibles`);
+      return;
+    }
+
+    const toAdd = Math.min(quantity, available);
+    for (let i = 0; i < toAdd; i++) {
       this.cart.push(product);
     }
     this.saveCartToStorage();
-    this.cartAdd$.next({ product, quantity });
-    if (notify) this.cartNotify$.next(`${quantity} × ${product.name} añadido`);
+    this.cartAdd$.next({ product, quantity: toAdd });
+    if (notify) {
+      if (toAdd < quantity) this.cartNotify$.next(`${toAdd} × ${product.name} añadido (límite de stock)`);
+      else this.cartNotify$.next(`${toAdd} × ${product.name} añadido`);
+    }
     this.cartChanged$.next();
   }
 
@@ -116,14 +128,18 @@ export class ProductoService {
       this.removeProductFromCart(product.id, notify);
       return;
     }
-    if (quantity > current) {
-      const toAdd = quantity - current;
+    const stock = typeof product.inStock === 'number' ? product.inStock : 0;
+    const allowedQty = Math.min(quantity, stock);
+
+    if (allowedQty === current) return;
+
+    if (allowedQty > current) {
+      const toAdd = allowedQty - current;
       for (let i = 0; i < toAdd; i++) {
-        if (!product.inStock) break;
         this.cart.push(product);
       }
     } else {
-      let toRemove = current - quantity;
+      let toRemove = current - allowedQty;
       while (toRemove > 0) {
         const idx = this.cart.findIndex(p => p.id === product.id);
         if (idx === -1) break;
