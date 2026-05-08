@@ -84,8 +84,11 @@ export class CatalogoComponent implements OnInit, OnDestroy, AfterViewInit {
       this.displayedProducts = [...this.products];
       return;
     }
-    this.displayedProducts = this.products.filter(p =>
-      (p.name?.toLowerCase() === q) || (p.category?.toLowerCase() === q)
-    );
+
+    this.displayedProducts = this.products.filter(p => {
+      const name = p.name?.toLowerCase() || '';
+      const category = p.category?.toLowerCase() || '';
+      return name.includes(q) || category.includes(q);
+    });
   }
 }
