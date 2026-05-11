@@ -43,6 +43,7 @@ async function createPaypalOrder(orderData) {
           }
         },
         items: orderData.items.map(item => ({
+          sku: String(item.productoId ?? item.productId ?? item.id ?? ''),
           name: item.nombre ?? item.name,
           quantity: String(item.cantidad ?? item.quantity ?? 1),
           unit_amount: {

@@ -13,6 +13,7 @@ const db = new sqlite3.Database(DB_PATH, (err) => {
         return;
     }
     console.log('Conexión a SQLite establecida:', DB_PATH);
+    db.run('PRAGMA foreign_keys = ON;');
 
     // initializeDatabase();
 });
