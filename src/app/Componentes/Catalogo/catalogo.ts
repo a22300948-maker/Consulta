@@ -21,6 +21,8 @@ export class CatalogoComponent implements OnInit, OnDestroy, AfterViewInit {
   products: Products[] = [];
   displayedProducts: Products[] = [];
   searchQuery = '';
+  selectedCategory = '';
+  categories: string[] = [];
   counter = 0;
   private subs: Subscription[] = [];
 
@@ -33,6 +35,7 @@ export class CatalogoComponent implements OnInit, OnDestroy, AfterViewInit {
     this.productoService.getAllFromApi().subscribe({
       next: list => {
         this.products = list || [];
+        this.categories = [...new Set(this.products.map(p => p.category))].sort();
         this.applySearch();
         this.cdr.detectChanges();
       },
@@ -67,6 +70,11 @@ export class CatalogoComponent implements OnInit, OnDestroy, AfterViewInit {
     this.router.navigate(['/carrito']);
   }
 
+  onCategoryChange(category: string): void {
+    this.selectedCategory = category;
+    this.applySearch();
+  }
+
   // capture only when Enter is pressed
   onSearchInput(ev: Event) {
     if (!(ev.target instanceof HTMLInputElement)) return;
@@ -79,16 +87,16 @@ export class CatalogoComponent implements OnInit, OnDestroy, AfterViewInit {
 
   applySearch(): void {
     const q = (this.searchQuery || '').trim().toLowerCase();
-    // Treat literal strings 'null' and 'undefined' (sometimes injected by autofill) as empty
-    if (!q || q === 'null' || q === 'undefined') {
-      this.displayedProducts = [...this.products];
-      return;
-    }
+    const cat = (this.selectedCategory || '').trim();
 
     this.displayedProducts = this.products.filter(p => {
       const name = p.name?.toLowerCase() || '';
       const category = p.category?.toLowerCase() || '';
-      return name.includes(q) || category.includes(q);
+
+      const matchesSearch = !q || q === 'null' || q === 'undefined' || name.includes(q) || category.includes(q);
+      const matchesCategory = !cat || category === cat.toLowerCase();
+
+      return matchesSearch && matchesCategory;
     });
   }
 }

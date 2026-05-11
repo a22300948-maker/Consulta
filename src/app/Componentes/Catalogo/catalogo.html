@@ -5,7 +5,12 @@
 </div>
 
 <header class="header">
-    <h1>Catálogo</h1>
+    <div class="catalog-filter">
+        <select id="category-select" class="category-select" (change)="onCategoryChange($any($event.target).value)">
+            <option value="">Todas las categorías</option>
+            <option *ngFor="let cat of categories" [value]="cat">{{cat}}</option>
+        </select>
+    </div>
 
     <div class="catalog-search">
         <input id="catalog-search-input" type="search" placeholder="Buscar (coincidencia exacta: nombre o categoría)" (input)="onSearchInput($event)" [value]="searchQuery" autocomplete="off" spellcheck="false" />
