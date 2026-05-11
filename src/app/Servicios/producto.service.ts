@@ -131,6 +131,10 @@ export class ProductoService {
     const stock = typeof product.inStock === 'number' ? product.inStock : 0;
     const allowedQty = Math.min(quantity, stock);
 
+    if (allowedQty < quantity) {
+      this.cartNotify$.next('Hola. No puedes pedir más de lo que tenemos en stock');
+    }
+
     if (allowedQty === current) return;
 
     if (allowedQty > current) {
