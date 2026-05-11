@@ -2,7 +2,7 @@ const {
   createPaypalOrder,
   capturePaypalOrder,
 } = require('../services/paypal.service');
-const db = require('../config/db');
+const { saveVenta } = require('../services/venta.service');
 
 // Map temporal para relacionar orderId -> items enviados en create-order
 const createdOrders = new Map();
@@ -56,48 +56,54 @@ async function captureOrder(req, res) {
 
     const captureData = await capturePaypalOrder(orderId);
 
-    // obtener items asociados a la orden (si existen)
     let items = createdOrders.get(orderId);
 
-    // Si no están en memoria, intentar extraer desde la respuesta de PayPal
     if ((!items || items.length === 0) && captureData?.purchase_units) {
-      try {
-        items = [];
-        for (const pu of captureData.purchase_units) {
-          if (Array.isArray(pu.items)) {
-            for (const it of pu.items) {
-              items.push({ name: it.name, quantity: Number(it.quantity || 1) });
-            }
+      items = [];
+      for (const pu of captureData.purchase_units) {
+        if (Array.isArray(pu.items)) {
+          for (const it of pu.items) {
+            items.push({
+              sku: it.sku ?? null,
+              name: it.name,
+              quantity: Number(it.quantity || 1),
+              price: Number(it.unit_amount?.value || 0),
+              subtotal: Number(it.unit_amount?.value || 0) * Number(it.quantity || 1),
+            });
           }
         }
-      } catch (e) {
-        items = [];
       }
     }
 
-    // Si tenemos items, decrementar stock en la BD de forma segura
     if (items && items.length > 0) {
-      // ejecutar actualizaciones en paralelo
-      const updates = items.map((it) => {
-        return new Promise((resolve, reject) => {
-          const qty = Number(it.quantity || 0);
-          if (!it.name || qty <= 0) return resolve();
-          // actualizar inStock restando la cantidad, sin permitir valores negativos
-          const sql = `UPDATE producto SET inStock = CASE WHEN inStock - ? >= 0 THEN inStock - ? ELSE 0 END WHERE name = ?`;
-          db.run(sql, [qty, qty, it.name], function (err) {
-            if (err) return reject(err);
-            resolve(this.changes || 0);
-          });
-        });
-      });
+      const purchaseUnit = captureData?.purchase_units?.[0] ?? null;
+      const captureAmountValue = purchaseUnit?.amount?.value
+        ?? purchaseUnit?.payments?.captures?.[0]?.amount?.value;
+      const currency = purchaseUnit?.amount?.currency_code
+        ?? purchaseUnit?.payments?.captures?.[0]?.amount?.currency_code
+        ?? 'MXN';
+      const total = Number(captureAmountValue ?? items.reduce((sum, item) => sum + (Number(item.subtotal) || 0), 0));
 
-      try {
-        await Promise.all(updates);
-      } catch (e) {
-        console.error('Error actualizando stock:', e);
+      if (Number.isNaN(total) || total <= 0) {
+        console.error('captureOrder: total inválido extraído de PayPal', {
+          purchaseUnit,
+          items,
+          totalCandidate: captureAmountValue,
+        });
+        return res.status(500).json({
+          error: 'No se pudo guardar la venta, total inválido',
+          detalle: 'Total inválido extraído del pago'
+        });
       }
 
-      // limpiar mapping
+      await saveVenta({
+        paypalOrderId: orderId,
+        total,
+        currency,
+        status: captureData?.status ?? 'COMPLETED',
+        items,
+        rawPayload: captureData,
+      });
       createdOrders.delete(orderId);
     }
 

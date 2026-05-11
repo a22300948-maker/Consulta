@@ -1,10 +1,12 @@
-// database/initDb.js - reinitialize producto table with sDescription and numeric inStock
+// database/initDb.js - initialize the database only when it does not exist, preserve data otherwise
 const sqlite3 = require('sqlite3');
 const path = require('path');
+const fs = require('fs');
 
 const DB_PATH = path.join(__dirname, 'database.db');
 
 function initializeDatabase() {
+    const databaseExists = fs.existsSync(DB_PATH);
     const db = new sqlite3.Database(DB_PATH, (err) => {
         if (err) {
             console.error('Error al abrir/crear la base de datos:', err.message);
@@ -16,11 +18,8 @@ function initializeDatabase() {
     db.serialize(() => {
         db.run('PRAGMA foreign_keys = ON;');
 
-        // Dropear la tabla si existe para asegurar la nueva estructura
-        db.run('DROP TABLE IF EXISTS producto;');
-
-        const createTableSQL = `
-            CREATE TABLE producto (
+        const createProductoSQL = `
+            CREATE TABLE IF NOT EXISTS producto (
                 id_prod INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL,
                 price REAL NOT NULL,
@@ -32,40 +31,137 @@ function initializeDatabase() {
             );
         `;
 
-        db.run(createTableSQL, (err) => {
+        const createPedidoSQL = `
+            CREATE TABLE IF NOT EXISTS pedido (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                paypal_order_id TEXT,
+                total REAL NOT NULL,
+                currency TEXT NOT NULL DEFAULT 'MXN',
+                status TEXT,
+                created_at TEXT NOT NULL DEFAULT (datetime('now')),
+                receipt_xml TEXT,
+                receipt_downloaded_at TEXT,
+                raw_payload TEXT
+            );
+        `;
+
+        const createPedidoItemSQL = `
+            CREATE TABLE IF NOT EXISTS pedido_item (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                pedido_id INTEGER NOT NULL,
+                producto_id INTEGER,
+                item_name TEXT NOT NULL,
+                unit_price REAL NOT NULL,
+                quantity INTEGER NOT NULL,
+                subtotal REAL NOT NULL,
+                FOREIGN KEY (pedido_id) REFERENCES pedido(id) ON DELETE CASCADE,
+                FOREIGN KEY (producto_id) REFERENCES producto(id_prod)
+            );
+        `;
+
+        db.run(createProductoSQL);
+        db.run(createPedidoSQL);
+        db.run(createPedidoItemSQL, (err) => {
             if (err) {
-                console.error('Error creando tabla:', err.message);
+                console.error('Error creando tablas iniciales:', err.message);
                 db.close();
                 process.exit(1);
             }
-            console.log('Tabla "producto" creada con nueva estructura.');
 
-            // Insertar productos iniciales con descripciones cortas y largas, y cantidades en stock
-            const insertSQL = `
-                INSERT INTO producto (id_prod, name, price, imageURL, category, sDescription, description, inStock) VALUES
-                (1, 'Pan Artesanal Romano', 45, 'https://i.ytimg.com/vi/650ob30wQ50/maxresdefault.jpg', 'alimento', 'Pan rústico tradicional', 'Pan rústico elaborado con harina integral y masa madre, siguiendo técnicas tradicionales que aportan textura y sabor profundo.', 25),
-                (2, 'Queso de Cabra Artesanal', 120, 'https://tianguisvirtual.mx/wp-content/uploads/2022/09/13.png', 'alimento', 'Queso fresco de cabra', 'Queso de cabra madurado el tiempo justo para obtener una textura cremosa y un aroma suave, ideal para tablas y cocina tradicional.', 12),
-                (3, 'Miel Natural', 80, 'https://bodegaslaeralta.es/cdn/shop/articles/mulsum.jpg?v=1681318710', 'alimento', 'Miel pura de flor', 'Miel 100% natural recolectada de flores silvestres, sin aditivos, con notas florales y cuerpo denso.', 40),
-                (4, 'Aceitunas Mediterraneas', 65, 'https://http2.mlstatic.com/D_Q_NP_2X_879191-MLA99373462456_112025-T.webp', 'alimento', 'Aceitunas seleccionadas', 'Aceitunas verdes y negras curadas con hierbas mediterráneas para un sabor equilibrado y tradicional.', 30),
-                (5, 'Vasija de Ceramica', 150, 'https://m.media-amazon.com/images/I/71LtaeN9EHL._AC_UF894,1000_QL80_.jpg', 'decoracion', 'Vasija cerámica decorativa', 'Vasija de cerámica hecha y pintada a mano, inspirada en estilos antiguos, perfecta como pieza decorativa o contenedor.', 8),
-                (6, 'Tunica Romana', 250, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS8tLj7YHVQ_-bqVDP53OkuZLCNmUjAJGcZNw&s', 'vestimenta', 'Túnica temática', 'Túnica de algodón con corte clásico, ideal para recreaciones históricas o eventos temáticos; cómoda y resistente.', 6),
-                (7, 'Vino Tinto Romano', 180, 'https://lamanchawines.com/wp-content/uploads/2018/08/12540025.jpg', 'alimento', 'Vino tinto tradicional', 'Vino tinto con cuerpo y notas frutales, elaborado siguiendo técnicas inspiradas en recetas antiguas.', 20),
-                (8, 'Pan de Higos', 55, 'https://comedera.com/wp-content/uploads/sites/9/2022/04/pan-de-higo.jpg', 'alimento', 'Pan dulce con higos', 'Pan dulce relleno de higos secos y especias, con miga tierna y sabor naturalmente dulce.', 18),
-                (9, 'Aceite de Oliva Extra Virgen', 140, 'https://www.molinoalfonso.com/wp-content/uploads/2021/06/aceite-oliva-virgen-extra-aragon.jpg', 'alimento', 'Aceite de oliva premium', 'Aceite de oliva extra virgen prensado en frío, con aroma intenso y sabor afrutado, perfecto para aderezos y cocina.', 22),
-                (10, 'Copa de Metal Antigua', 95, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRA5kNjJj83Jq4AxIKj47ID1dzEHTowiBMxvA&s', 'decoracion', 'Copa metálica decorativa', 'Copa metálica con acabado envejecido, ideal como pieza de colección o decoración para mesas temáticas.', 11),
-                (11, 'Casco de Gladiador', 320, 'https://marqalicante.com/gladiadores/wp-content/uploads/2022/03/Gladiadores-MArq-Alicante-Caso-2.jpg', 'decoracion', 'Casco decorativo', 'Casco de inspiración histórica, perfecto para exhibición o para complementar disfraces en eventos culturales.', 4),
-                (12, 'Sandalias Romanas', 210, 'https://m.media-amazon.com/images/I/518Qdrpt0dL._AC_UF894,1000_QL80_.jpg', 'vestimenta', 'Sandalias tradicionales', 'Sandalias de cuero con diseño tradicional; cómodas y duraderas para recreaciones o uso casual.', 9),
-                (13, 'Pergamino Decorativo', 70, 'https://i.etsystatic.com/20336931/r/il/50d18c/2691901451/il_570xN.2691901451_3fes.jpg', 'decoracion', 'Pergamino para decoración', 'Pergamino impreso con motivos antiguos, ideal para enmarcar o usar en decoraciones temáticas.', 14),
-                (14, 'Incienso Aromático', 60, 'https://www.jessenza.com/wp-content/uploads/2019/03/Incienso-Aromatico-Jessenza.jpeg', 'miscelaneos', 'Incienso de aromas suaves', 'Incienso aromático de mezcla herbal, utilizado para ambientar espacios y ceremonias con fragancias sutiles.', 26);
-            `;
+            if (!databaseExists) {
+                seedInitialProductsV2(db).finally(() => db.close());
+                return;
+            }
 
-            db.exec(insertSQL, (err) => {
+            db.get('SELECT COUNT(1) AS count FROM producto;', (err, row) => {
                 if (err) {
-                    console.error('Error insertando datos:', err.message);
-                } else {
-                    console.log('Productos insertados correctamente.');
+                    console.error('Error verificando tabla producto:', err.message);
+                } else if (!row || row.count === 0) {
+                    seedInitialProductsV2(db).finally(() => db.close());
+                    return;
                 }
                 db.close();
+            });
+        });
+    });
+}
+
+function seedInitialProducts(db) {
+    return new Promise((resolve) => {
+        const insertSQL = `
+            INSERT INTO producto (id_prod, name, price, imageURL, category, sDescription, description, inStock) VALUES
+            (1, 'Pan Artesanal Romano', 45, 'https://i.ytimg.com/vi/650ob30wQ50/maxresdefault.jpg', 'alimento', 'Pan rústico tradicional', 'Pan rústico elaborado con harina integral y masa madre, siguiendo técnicas tradicionales que aportan textura y sabor profundo.', 25),
+            (2, 'Queso de Cabra Artesanal', 120, 'https://tianguisvirtual.mx/wp-content/uploads/2022/09/13.png', 'alimento', 'Queso fresco de cabra', 'Queso de cabra madurado el tiempo justo para obtener una textura cremosa y un aroma suave, ideal para tablas y cocina tradicional.', 12),
+            (3, 'Miel Natural', 80, 'https://bodegaslaeralta.es/cdn/shop/articles/mulsum.jpg?v=1681318710', 'alimento', 'Miel pura de flor', 'Miel 100% natural recolectada de flores silvestres, sin aditivos, con notas florales y cuerpo denso.', 40),
+            (4, 'Aceitunas Mediterraneas', 65, 'https://http2.mlstatic.com/D_Q_NP_2X_879191-MLA99373462456_112025-T.webp', 'alimento', 'Aceitunas seleccionadas', 'Aceitunas verdes y negras curadas con hierbas mediterráneas para un sabor equilibrado y tradicional.', 30),
+            (5, 'Vasija de Ceramica', 150, 'https://m.media-amazon.com/images/I/71LtaeN9EHL._AC_UF894,1000_QL80_.jpg', 'decoracion', 'Vasija cerámica decorativa', 'Vasija de cerámica hecha y pintada a mano, inspirada en estilos antiguos, perfecta como pieza decorativa o contenedor.', 8),
+            (6, 'Tunica Romana', 250, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS8tLj7YHVQ_-bqVDP53OkuZLCNmUjAJGcZNw&s', 'vestimenta', 'Túnica temática', 'Túnica de algodón con corte clásico, ideal para recreaciones históricas o eventos temáticos, cómoda y resistente.', 6),
+            (7, 'Vino Tinto Romano', 180, 'https://lamanchawines.com/wp-content/uploads/2018/08/12540025.jpg', 'alimento', 'Vino tinto tradicional', 'Vino tinto con cuerpo y notas frutales, elaborado siguiendo técnicas inspiradas en recetas antiguas.', 20),
+            (8, 'Pan de Higos', 55, 'https://comedera.com/wp-content/uploads/sites/9/2022/04/pan-de-higo.jpg', 'alimento', 'Pan dulce con higos', 'Pan dulce relleno de higos secos y especias, con miga tierna y sabor naturalmente dulce.', 18),
+            (9, 'Aceite de Oliva Extra Virgen', 140, 'https://www.molinoalfonso.com/wp-content/uploads/2021/06/aceite-oliva-virgen-extra-aragon.jpg', 'alimento', 'Aceite de oliva premium', 'Aceite de oliva extra virgen prensado en frío, con aroma intenso y sabor afrutado, perfecto para aderezos y cocina.', 22),
+            (10, 'Copa de Metal Antigua', 95, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRA5kNjJj83Jq4AxIKj47ID1dzEHTowiBMxvA&s', 'decoracion', 'Copa metálica decorativa', 'Copa metálica con acabado envejecido, ideal como pieza de colección o decoración para mesas temáticas.', 11),
+            (11, 'Casco de Gladiador', 320, 'https://marqalicante.com/gladiadores/wp-content/uploads/2022/03/Gladiadores-MArq-Alicante-Caso-2.jpg', 'decoracion', 'Casco de inspiración histórica, perfecto para exhibición o para complementar disfraces en eventos culturales.', 4),
+            (12, 'Sandalias Romanas', 210, 'https://m.media-amazon.com/images/I/518Qdrpt0dL._AC_UF894,1000_QL80_.jpg', 'vestimenta', 'Sandalias tradicionales', 'Sandalias de cuero con diseño tradicional, cómodas y duraderas para recreaciones o uso casual.', 9),
+            (13, 'Pergamino Decorativo', 70, 'https://i.etsystatic.com/20336931/r/il/50d18c/2691901451/il_570xN.2691901451_3fes.jpg', 'decoracion', 'Pergamino para decoración', 'Pergamino impreso con motivos antiguos, ideal para enmarcar o usar en decoraciones temáticas.', 14),
+            (14, 'Incienso Aromático', 60, 'https://www.jessenza.com/wp-content/uploads/2019/03/Incienso-Aromatico-Jessenza.jpeg', 'miscelaneos', 'Incienso de aromas suaves', 'Incienso aromático de mezcla herbal, utilizado para ambientar espacios y ceremonias con fragancias sutiles.', 26);
+        `;
+
+        db.exec(insertSQL, (err) => {
+            if (err) {
+                console.error('Error insertando datos:', err.message);
+            } else {
+                console.log('Productos insertados correctamente.');
+            }
+            resolve();
+        });
+    });
+}
+
+function seedInitialProductsV2(db) {
+    return new Promise((resolve) => {
+        const productos = [
+            { id_prod: 1, name: 'Pan Artesanal Romano', price: 45, imageURL: 'https://i.ytimg.com/vi/650ob30wQ50/maxresdefault.jpg', category: 'alimento', sDescription: 'Pan rústico tradicional', description: 'Pan rústico elaborado con harina integral y masa madre, siguiendo técnicas tradicionales que aportan textura y sabor profundo.', inStock: 25 },
+            { id_prod: 2, name: 'Queso de Cabra Artesanal', price: 120, imageURL: 'https://tianguisvirtual.mx/wp-content/uploads/2022/09/13.png', category: 'alimento', sDescription: 'Queso fresco de cabra', description: 'Queso de cabra madurado el tiempo justo para obtener una textura cremosa y un aroma suave, ideal para tablas y cocina tradicional.', inStock: 12 },
+            { id_prod: 3, name: 'Miel Natural', price: 80, imageURL: 'https://bodegaslaeralta.es/cdn/shop/articles/mulsum.jpg?v=1681318710', category: 'alimento', sDescription: 'Miel pura de flor', description: 'Miel 100% natural recolectada de flores silvestres, sin aditivos, con notas florales y cuerpo denso.', inStock: 40 },
+            { id_prod: 4, name: 'Aceitunas Mediterraneas', price: 65, imageURL: 'https://http2.mlstatic.com/D_Q_NP_2X_879191-MLA99373462456_112025-T.webp', category: 'alimento', sDescription: 'Aceitunas seleccionadas', description: 'Aceitunas verdes y negras curadas con hierbas mediterráneas para un sabor equilibrado y tradicional.', inStock: 30 },
+            { id_prod: 5, name: 'Vasija de Ceramica', price: 150, imageURL: 'https://m.media-amazon.com/images/I/71LtaeN9EHL._AC_UF894,1000_QL80_.jpg', category: 'decoracion', sDescription: 'Vasija cerámica decorativa', description: 'Vasija de cerámica hecha y pintada a mano, inspirada en estilos antiguos, perfecta como pieza decorativa o contenedor.', inStock: 8 },
+            { id_prod: 6, name: 'Tunica Romana', price: 250, imageURL: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS8tLj7YHVQ_-bqVDP53OkuZLCNmUjAJGcZNw&s', category: 'vestimenta', sDescription: 'Túnica temática', description: 'Túnica de algodón con corte clásico, ideal para recreaciones históricas o eventos temáticos, cómoda y resistente.', inStock: 6 },
+            { id_prod: 7, name: 'Vino Tinto Romano', price: 180, imageURL: 'https://lamanchawines.com/wp-content/uploads/2018/08/12540025.jpg', category: 'alimento', sDescription: 'Vino tinto tradicional', description: 'Vino tinto con cuerpo y notas frutales, elaborado siguiendo técnicas inspiradas en recetas antiguas.', inStock: 20 },
+            { id_prod: 8, name: 'Pan de Higos', price: 55, imageURL: 'https://comedera.com/wp-content/uploads/sites/9/2022/04/pan-de-higo.jpg', category: 'alimento', sDescription: 'Pan dulce con higos', description: 'Pan dulce relleno de higos secos y especias, con miga tierna y sabor naturalmente dulce.', inStock: 18 },
+            { id_prod: 9, name: 'Aceite de Oliva Extra Virgen', price: 140, imageURL: 'https://www.molinoalfonso.com/wp-content/uploads/2021/06/aceite-oliva-virgen-extra-aragon.jpg', category: 'alimento', sDescription: 'Aceite de oliva premium', description: 'Aceite de oliva extra virgen prensado en frío, con aroma intenso y sabor afrutado, perfecto para aderezos y cocina.', inStock: 22 },
+            { id_prod: 10, name: 'Copa de Metal Antigua', price: 95, imageURL: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRA5kNjJj83Jq4AxIKj47ID1dzEHTowiBMxvA&s', category: 'decoracion', sDescription: 'Copa metálica decorativa', description: 'Copa metálica con acabado envejecido, ideal como pieza de colección o decoración para mesas temáticas.', inStock: 11 },
+            { id_prod: 11, name: 'Casco de Gladiador', price: 320, imageURL: 'https://marqalicante.com/gladiadores/wp-content/uploads/2022/03/Gladiadores-MArq-Alicante-Caso-2.jpg', category: 'decoracion', sDescription: 'Casco decorativo', description: 'Casco de inspiración histórica, perfecto para exhibición o para complementar disfraces en eventos culturales.', inStock: 4 },
+            { id_prod: 12, name: 'Sandalias Romanas', price: 210, imageURL: 'https://m.media-amazon.com/images/I/518Qdrpt0dL._AC_UF894,1000_QL80_.jpg', category: 'vestimenta', sDescription: 'Sandalias tradicionales', description: 'Sandalias de cuero con diseño tradicional, cómodas y duraderas para recreaciones o uso casual.', inStock: 9 },
+            { id_prod: 13, name: 'Pergamino Decorativo', price: 70, imageURL: 'https://i.etsystatic.com/20336931/r/il/50d18c/2691901451/il_570xN.2691901451_3fes.jpg', category: 'decoracion', sDescription: 'Pergamino para decoración', description: 'Pergamino impreso con motivos antiguos, ideal para enmarcar o usar en decoraciones temáticas.', inStock: 14 },
+            { id_prod: 14, name: 'Incienso Aromático', price: 60, imageURL: 'https://www.jessenza.com/wp-content/uploads/2019/03/Incienso-Aromatico-Jessenza.jpeg', category: 'miscelaneos', sDescription: 'Incienso de aromas suaves', description: 'Incienso aromático de mezcla herbal, utilizado para ambientar espacios y ceremonias con fragancias suaves.', inStock: 26 },
+        ];
+
+        const stmt = db.prepare('INSERT INTO producto (id_prod, name, price, imageURL, category, sDescription, description, inStock) VALUES (?, ?, ?, ?, ?, ?, ?, ?);');
+        let pending = productos.length;
+        productos.forEach((producto) => {
+            stmt.run([
+                producto.id_prod,
+                producto.name,
+                producto.price,
+                producto.imageURL,
+                producto.category,
+                producto.sDescription,
+                producto.description,
+                producto.inStock,
+            ], (err) => {
+                if (err) {
+                    console.error('Error insertando dato:', err.message, producto.name);
+                }
+                pending -= 1;
+                if (pending === 0) {
+                    stmt.finalize((finalizeErr) => {
+                        if (finalizeErr) {
+                            console.error('Error finalizando statement:', finalizeErr.message);
+                        }
+                        console.log('Productos insertados correctamente.');
+                        resolve();
+                    });
+                }
             });
         });
     });
