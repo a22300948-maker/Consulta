@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, NgZone } from '@angular/core';
+import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { ProductoService } from './Servicios/producto.service';
 import { ModalService } from './Servicios/modal.service';
@@ -14,7 +14,7 @@ import { Products } from './Modelos/producto.model';
 export class App {
   protected readonly title = 'Consulta';
 
-    
+
   selectedProduct: Products | null = null;
   modalVisible = false;
 
@@ -22,7 +22,7 @@ export class App {
   toastVisible = false;
   private modalPendingQty = '';
 
-  constructor(private productoService: ProductoService, private modalService: ModalService, private zone: NgZone) {
+  constructor(private productoService: ProductoService, private modalService: ModalService) {
     // Mensajes generales del carrito (eliminar/vaciar)
     this.productoService.cartNotify$.subscribe((msg) => this.showToast(msg));
     // Modal product details
