@@ -8,10 +8,12 @@ import { Products } from './Modelos/producto.model';
 @Component({
   selector: 'app-root',
   imports: [RouterOutlet, CommonModule],
+  imports: [RouterOutlet, CommonModule],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
 export class App {
+  protected readonly title = 'Consulta';
   protected readonly title = 'Consulta';
 
     
