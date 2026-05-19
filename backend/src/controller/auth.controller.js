@@ -17,3 +17,15 @@ export const register = async (req, res) => {
         res.status(500).json({ message: 'Error creating user', error: err.message });
     }
 };
+
+//Login
+export const login = async (req, res) => {
+    //buscar usuario
+    //validar existencia
+    //comparar contraseñas
+    const validPassword = await bcrypt.compare(req.body.password, user.password);
+    //genero jwt
+    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        res.status(200).json({ message: 'Login successful', token });
+};
+
