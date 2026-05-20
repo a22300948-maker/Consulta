@@ -18,6 +18,16 @@ function initializeDatabase() {
     db.serialize(() => {
         db.run('PRAGMA foreign_keys = ON;');
 
+        const createUserSQL = `
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT UNIQUE NOT NULL,
+                email TEXT UNIQUE NOT NULL,
+                password TEXT NOT NULL,
+                created_at TEXT NOT NULL DEFAULT (datetime('now'))
+            );
+        `;
+
         const createProductoSQL = `
             CREATE TABLE IF NOT EXISTS producto (
                 id_prod INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -59,6 +69,7 @@ function initializeDatabase() {
             );
         `;
 
+        db.run(createUserSQL);
         db.run(createProductoSQL);
         db.run(createPedidoSQL);
         db.run(createPedidoItemSQL, (err) => {
@@ -96,14 +107,14 @@ function seedInitialProducts(db) {
             (4, 'Aceitunas Mediterraneas', 65, 'https://http2.mlstatic.com/D_Q_NP_2X_879191-MLA99373462456_112025-T.webp', 'alimento', 'Aceitunas seleccionadas', 'Aceitunas verdes y negras curadas con hierbas mediterráneas para un sabor equilibrado y tradicional.', 30),
             (5, 'Vasija de Ceramica', 150, 'https://m.media-amazon.com/images/I/71LtaeN9EHL._AC_UF894,1000_QL80_.jpg', 'decoracion', 'Vasija cerámica decorativa', 'Vasija de cerámica hecha y pintada a mano, inspirada en estilos antiguos, perfecta como pieza decorativa o contenedor.', 8),
             (6, 'Tunica Romana', 250, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS8tLj7YHVQ_-bqVDP53OkuZLCNmUjAJGcZNw&s', 'vestimenta', 'Túnica temática', 'Túnica de algodón con corte clásico, ideal para recreaciones históricas o eventos temáticos, cómoda y resistente.', 6),
-            (7, 'Vino Tinto Romano', 180, 'https://lamanchawines.com/wp-content/uploads/2018/08/12540025.jpg', 'alimento', 'Vino tinto tradicional', 'Vino tinto con cuerpo y notas frutales, elaborado siguiendo técnicas inspiradas en recetas antiguas.', 20),
+            (7, 'Vino Tinto Romano', 180, 'https://lamanchawines.com/wp-content/uploads/2018/05/12540025.jpg', 'alimento', 'Vino tinto tradicional', 'Vino tinto con cuerpo y notas frutales, elaborado siguiendo técnicas inspiradas en recetas antiguas.', 20),
             (8, 'Pan de Higos', 55, 'https://comedera.com/wp-content/uploads/sites/9/2022/04/pan-de-higo.jpg', 'alimento', 'Pan dulce con higos', 'Pan dulce relleno de higos secos y especias, con miga tierna y sabor naturalmente dulce.', 18),
-            (9, 'Aceite de Oliva Extra Virgen', 140, 'https://www.molinoalfonso.com/wp-content/uploads/2021/06/aceite-oliva-virgen-extra-aragon.jpg', 'alimento', 'Aceite de oliva premium', 'Aceite de oliva extra virgen prensado en frío, con aroma intenso y sabor afrutado, perfecto para aderezos y cocina.', 22),
-            (10, 'Copa de Metal Antigua', 95, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRA5kNjJj83Jq4AxIKj47ID1dzEHTowiBMxvA&s', 'decoracion', 'Copa metálica decorativa', 'Copa metálica con acabado envejecido, ideal como pieza de colección o decoración para mesas temáticas.', 11),
-            (11, 'Casco de Gladiador', 320, 'https://marqalicante.com/gladiadores/wp-content/uploads/2022/03/Gladiadores-MArq-Alicante-Caso-2.jpg', 'decoracion', 'Casco de inspiración histórica, perfecto para exhibición o para complementar disfraces en eventos culturales.', 4),
+            (9, 'Aceite de Oliva Extra Virgen', 140, 'https://www.molinoalfonso.com/wp-content/uploads/2018/08/aceite-oliva-virgen-extra-aragon.jpg', 'alimento', 'Aceite de oliva premium', 'Aceite de oliva extra virgen prensado en frío, con aroma intenso y sabor afrutado, perfecto para aderezos y cocina.', 22),
+            (10, 'Copa de Metal Antigua', 95, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRA5kNjJj83Jq4AxIKj47ID1dzEHTowiBMxA&s', 'decoracion', 'Copa metálica decorativa', 'Copa metálica con acabado envejecido, ideal como pieza de colección o decoración para mesas temáticas.', 11),
+            (11, 'Casco de Gladiador', 320, 'https://marqalicante.com/gladiadores/wp-content/uploads/2022/03/Gladiadores-MArq-Alicante-Caso-2.jpg', 'decoracion', 'Casco decorativo', 'Casco de inspiración histórica, perfecto para exhibición o para complementar disfraces en eventos culturales.', 4),
             (12, 'Sandalias Romanas', 210, 'https://m.media-amazon.com/images/I/518Qdrpt0dL._AC_UF894,1000_QL80_.jpg', 'vestimenta', 'Sandalias tradicionales', 'Sandalias de cuero con diseño tradicional, cómodas y duraderas para recreaciones o uso casual.', 9),
-            (13, 'Pergamino Decorativo', 70, 'https://i.etsystatic.com/20336931/r/il/50d18c/2691901451/il_570xN.2691901451_3fes.jpg', 'decoracion', 'Pergamino para decoración', 'Pergamino impreso con motivos antiguos, ideal para enmarcar o usar en decoraciones temáticas.', 14),
-            (14, 'Incienso Aromático', 60, 'https://www.jessenza.com/wp-content/uploads/2019/03/Incienso-Aromatico-Jessenza.jpeg', 'miscelaneos', 'Incienso de aromas suaves', 'Incienso aromático de mezcla herbal, utilizado para ambientar espacios y ceremonias con fragancias sutiles.', 26);
+            (13, 'Pergamino Decorativo', 70, 'https://i.etsystatic.com/20336931/r/il/50d18c/2691901451/il_570xN.2691901451_3fes.jpg', 'decoracion', 'Pergamino impreso con motivos antiguos, ideal para enmarcar o usar en decoraciones temáticas.', 14),
+            (14, 'Incienso Aromático', 60, 'https://www.jessenza.com/wp-content/uploads/2019/03/InciensoAromaticoJessenza.jpeg', 'miscelaneos', 'Incienso aromático de mezcla herbal, utilizado para ambientar espacios y ceremonias con fragancias sutiles.', 26);
         `;
 
         db.exec(insertSQL, (err) => {
@@ -126,14 +137,14 @@ function seedInitialProductsV2(db) {
             { id_prod: 4, name: 'Aceitunas Mediterraneas', price: 65, imageURL: 'https://http2.mlstatic.com/D_Q_NP_2X_879191-MLA99373462456_112025-T.webp', category: 'alimento', sDescription: 'Aceitunas seleccionadas', description: 'Aceitunas verdes y negras curadas con hierbas mediterráneas para un sabor equilibrado y tradicional.', inStock: 30 },
             { id_prod: 5, name: 'Vasija de Ceramica', price: 150, imageURL: 'https://m.media-amazon.com/images/I/71LtaeN9EHL._AC_UF894,1000_QL80_.jpg', category: 'decoracion', sDescription: 'Vasija cerámica decorativa', description: 'Vasija de cerámica hecha y pintada a mano, inspirada en estilos antiguos, perfecta como pieza decorativa o contenedor.', inStock: 8 },
             { id_prod: 6, name: 'Tunica Romana', price: 250, imageURL: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS8tLj7YHVQ_-bqVDP53OkuZLCNmUjAJGcZNw&s', category: 'vestimenta', sDescription: 'Túnica temática', description: 'Túnica de algodón con corte clásico, ideal para recreaciones históricas o eventos temáticos, cómoda y resistente.', inStock: 6 },
-            { id_prod: 7, name: 'Vino Tinto Romano', price: 180, imageURL: 'https://lamanchawines.com/wp-content/uploads/2018/08/12540025.jpg', category: 'alimento', sDescription: 'Vino tinto tradicional', description: 'Vino tinto con cuerpo y notas frutales, elaborado siguiendo técnicas inspiradas en recetas antiguas.', inStock: 20 },
+            { id_prod: 7, name: 'Vino Tinto Romano', price: 180, imageURL: 'https://lamanchawines.com/wp-content/uploads/2018/05/12540025.jpg', category: 'alimento', sDescription: 'Vino tinto tradicional', description: 'Vino tinto con cuerpo y notas frutales, elaborado siguiendo técnicas inspiradas en recetas antiguas.', inStock: 20 },
             { id_prod: 8, name: 'Pan de Higos', price: 55, imageURL: 'https://comedera.com/wp-content/uploads/sites/9/2022/04/pan-de-higo.jpg', category: 'alimento', sDescription: 'Pan dulce con higos', description: 'Pan dulce relleno de higos secos y especias, con miga tierna y sabor naturalmente dulce.', inStock: 18 },
-            { id_prod: 9, name: 'Aceite de Oliva Extra Virgen', price: 140, imageURL: 'https://www.molinoalfonso.com/wp-content/uploads/2021/06/aceite-oliva-virgen-extra-aragon.jpg', category: 'alimento', sDescription: 'Aceite de oliva premium', description: 'Aceite de oliva extra virgen prensado en frío, con aroma intenso y sabor afrutado, perfecto para aderezos y cocina.', inStock: 22 },
-            { id_prod: 10, name: 'Copa de Metal Antigua', price: 95, imageURL: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRA5kNjJj83Jq4AxIKj47ID1dzEHTowiBMxvA&s', category: 'decoracion', sDescription: 'Copa metálica decorativa', description: 'Copa metálica con acabado envejecido, ideal como pieza de colección o decoración para mesas temáticas.', inStock: 11 },
+            { id_prod: 9, name: 'Aceite de Oliva Extra Virgen', price: 140, imageURL: 'https://www.molinoalfonso.com/wp-content/uploads/2018/08/aceite-oliva-virgen-extra-aragon.jpg', category: 'alimento', sDescription: 'Aceite de oliva premium', description: 'Aceite de oliva extra virgen prensado en frío, con aroma intenso y sabor afrutado, perfecto para aderezos y cocina.', inStock: 22 },
+            { id_prod: 10, name: 'Copa de Metal Antigua', price: 95, imageURL: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRA5kNjJj83Jq4AxIKj47ID1dzEHTowiBMxA&s', category: 'decoracion', sDescription: 'Copa metálica decorativa', description: 'Copa metálica con acabado envejecido, ideal como pieza de colección o decoración para mesas temáticas.', inStock: 11 },
             { id_prod: 11, name: 'Casco de Gladiador', price: 320, imageURL: 'https://marqalicante.com/gladiadores/wp-content/uploads/2022/03/Gladiadores-MArq-Alicante-Caso-2.jpg', category: 'decoracion', sDescription: 'Casco decorativo', description: 'Casco de inspiración histórica, perfecto para exhibición o para complementar disfraces en eventos culturales.', inStock: 4 },
             { id_prod: 12, name: 'Sandalias Romanas', price: 210, imageURL: 'https://m.media-amazon.com/images/I/518Qdrpt0dL._AC_UF894,1000_QL80_.jpg', category: 'vestimenta', sDescription: 'Sandalias tradicionales', description: 'Sandalias de cuero con diseño tradicional, cómodas y duraderas para recreaciones o uso casual.', inStock: 9 },
-            { id_prod: 13, name: 'Pergamino Decorativo', price: 70, imageURL: 'https://i.etsystatic.com/20336931/r/il/50d18c/2691901451/il_570xN.2691901451_3fes.jpg', category: 'decoracion', sDescription: 'Pergamino para decoración', description: 'Pergamino impreso con motivos antiguos, ideal para enmarcar o usar en decoraciones temáticas.', inStock: 14 },
-            { id_prod: 14, name: 'Incienso Aromático', price: 60, imageURL: 'https://www.jessenza.com/wp-content/uploads/2019/03/Incienso-Aromatico-Jessenza.jpeg', category: 'miscelaneos', sDescription: 'Incienso de aromas suaves', description: 'Incienso aromático de mezcla herbal, utilizado para ambientar espacios y ceremonias con fragancias suaves.', inStock: 26 },
+            { id_prod: 13, name: 'Pergamino Decorativo', price: 70, imageURL: 'https://i.etsystatic.com/20336931/r/il/50d18c/2691901451/il_570xN.2691901451_3fes.jpg', category: 'decoracion', sDescription: 'Pergamino impreso decorativo', description: 'Pergamino impreso con motivos antiguos, ideal para enmarcar o usar en decoraciones temáticas.', inStock: 14 },
+            { id_prod: 14, name: 'Incienso Aromático', price: 60, imageURL: 'https://www.jessenza.com/wp-content/uploads/2019/03/InciensoAromaticoJessenza.jpeg', category: 'miscelaneos', sDescription: 'Incienso aromático', description: 'Incienso aromático de mezcla herbal, utilizado para ambientar espacios y ceremonias con fragancias suaves.', inStock: 26 },
         ];
 
         const stmt = db.prepare('INSERT INTO producto (id_prod, name, price, imageURL, category, sDescription, description, inStock) VALUES (?, ?, ?, ?, ?, ?, ?, ?);');

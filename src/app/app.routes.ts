@@ -1,21 +1,29 @@
 import { Routes } from '@angular/router';
 import { CatalogoComponent } from './Componentes/Catalogo/catalogo';
 import { CarritoComponent } from './Componentes/Carrito/carrito';
+import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
-    { path: '', component: CatalogoComponent  },
-    { path: 'catalogo', component: CatalogoComponent  },
-    { path: 'carrito', component: CarritoComponent },
-    { path: 'registro',
-        loadComponent: () =>
-            import('./auth/register.component.ts/register.component.ts').then(m => m.RegisterComponentTs)
-     },
-     { path: 'perfil',
-        loadComponent: () =>
-            import('./user/profile.component.ts/profile.component.ts').then(m => m.ProfileComponentTs)
-     },
-     {path: 'historial',
-        loadComponent: () =>
-            import('./user/history.component.ts/history.component.ts').then(m => m.HistoryComponentTs)
-     }
+  { path: '', component: CatalogoComponent, canActivate: [authGuard] },
+  { path: 'catalogo', component: CatalogoComponent, canActivate: [authGuard] },
+  { path: 'carrito', component: CarritoComponent, canActivate: [authGuard] },
+  {
+    path: 'login',
+    loadComponent: () => import('./Componentes/Login/login').then(m => m.LoginComponent)
+  },
+  {
+    path: 'registro',
+    loadComponent: () => import('./Componentes/Register/register').then(m => m.RegisterComponent)
+  },
+  {
+    path: 'perfil',
+    loadComponent: () => import('./user/profile.component.ts/profile.component.ts').then(m => m.ProfileComponentTs),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'historial',
+    loadComponent: () => import('./user/history.component.ts/history.component.ts').then(m => m.HistoryComponentTs),
+    canActivate: [authGuard]
+  },
+  { path: '**', redirectTo: 'registro' }
 ];
