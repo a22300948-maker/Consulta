@@ -17,12 +17,12 @@ export const routes: Routes = [
   },
   {
     path: 'perfil',
-    loadComponent: () => import('./user/profile.component.ts/profile.component.ts').then(m => m.ProfileComponentTs),
+    loadComponent: () => import('./Componentes/Profile/profile').then(m => m.ProfileComponent),
     canActivate: [authGuard]
   },
   {
     path: 'historial',
-    loadComponent: () => import('./user/history.component.ts/history.component.ts').then(m => m.HistoryComponentTs),
+    loadComponent: () => import('./Componentes/History/history').then(m => m.HistoryComponent),
     canActivate: [authGuard]
   },
   { path: '**', redirectTo: 'registro' }

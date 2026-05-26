@@ -3,6 +3,17 @@ const {
   capturePaypalOrder,
 } = require('../services/paypal.service');
 const { saveVenta } = require('../services/venta.service');
+const db = require('../config/db');
+const { buildReceiptHtml, buildReceiptXml, sendOrderReceiptEmail } = require('../services/mail.service');
+
+function queryOne(sql, params = []) {
+  return new Promise((resolve, reject) => {
+    db.get(sql, params, (err, row) => {
+      if (err) return reject(err);
+      resolve(row);
+    });
+  });
+}
 
 // Map temporal para relacionar orderId -> items enviados en create-order
 const createdOrders = new Map();
@@ -47,6 +58,7 @@ async function createOrder(req, res) {
 async function captureOrder(req, res) {
   try {
     const orderId = req.body?.orderId ?? req.body?.orderID;
+    const userId = req.userId || null;
 
     if (!orderId) {
       return res.status(400).json({
@@ -96,14 +108,72 @@ async function captureOrder(req, res) {
         });
       }
 
-      await saveVenta({
+      const user = userId
+        ? await queryOne(
+            'SELECT id, username, email, full_name AS fullName, address, postal_code AS postalCode FROM users WHERE id = ?;',
+            [userId]
+          )
+        : null;
+
+      const receiptXml = buildReceiptXml({
+        paypalOrderId: orderId,
+        pedidoId: null,
+        status: captureData?.status ?? 'COMPLETED',
+        currency,
+        total,
+        createdAt: new Date().toISOString(),
+        user,
+        items,
+      });
+
+      const pedidoId = await saveVenta({
         paypalOrderId: orderId,
         total,
         currency,
         status: captureData?.status ?? 'COMPLETED',
         items,
+        receiptXml,
         rawPayload: captureData,
+        userId,
       });
+
+      if (user?.email) {
+        const html = buildReceiptHtml({
+          paypalOrderId: orderId,
+          pedidoId,
+          status: captureData?.status ?? 'COMPLETED',
+          currency,
+          total,
+          createdAt: new Date().toISOString(),
+          user,
+          items,
+        });
+
+        const xmlWithPedido = buildReceiptXml({
+          paypalOrderId: orderId,
+          pedidoId,
+          status: captureData?.status ?? 'COMPLETED',
+          currency,
+          total,
+          createdAt: new Date().toISOString(),
+          user,
+          items,
+        });
+
+        try {
+          await sendOrderReceiptEmail({
+            to: user.email,
+            subject: `Recibo Walmart Romano - Orden ${orderId}`,
+            html,
+            xml: xmlWithPedido,
+            xmlFilename: `recibo-${orderId}.xml`,
+          });
+        } catch (mailErr) {
+          console.error('[mail] Error enviando recibo:', mailErr?.message || mailErr);
+        }
+      } else {
+        console.warn('[mail] Usuario sin email o no encontrado, no se envía recibo. userId=', userId);
+      }
       createdOrders.delete(orderId);
     }
 

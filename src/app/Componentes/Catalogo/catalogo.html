@@ -16,10 +16,13 @@
         <input id="catalog-search-input" type="search" placeholder="Buscar (coincidencia exacta: nombre o categoría)" (input)="onSearchInput($event)" [value]="searchQuery" autocomplete="off" spellcheck="false" />
     </div>
 
-    <button class="cart-button" (click)="goToCart()" aria-label="Ir al carrito">
-        <span class="cart-button__icon" aria-hidden="true"></span>
-        <span class="cart-button__count">{{counter}}</span>
-    </button>
+    <div class="catalog-actions">
+        <a class="profile-btn" href="/perfil">Perfil</a>
+        <button class="cart-button" (click)="goToCart()" aria-label="Ir al carrito">
+            <span class="cart-button__icon" aria-hidden="true"></span>
+            <span class="cart-button__count">{{counter}}</span>
+        </button>
+    </div>
 </header>
 
 <section class="grid">

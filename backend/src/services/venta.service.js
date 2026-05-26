@@ -1,4 +1,11 @@
 const db = require('../config/db');
+const { getTaxConfig } = require('../config/tax.config');
+
+function roundMoney(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return 0;
+  return Math.round(n * 100) / 100;
+}
 
 function runAsync(sql, params = []) {
   return new Promise((resolve, reject) => {
@@ -29,7 +36,7 @@ function normalizeItem(item) {
   };
 }
 
-async function saveVenta({ paypalOrderId, total, currency = 'MXN', status = 'COMPLETED', items, receiptXml = null, rawPayload = null }) {
+async function saveVenta({ paypalOrderId, total, currency = 'MXN', status = 'COMPLETED', items, receiptXml = null, rawPayload = null, userId = null }) {
   if (!items || !Array.isArray(items) || items.length === 0) {
     throw new Error('Se requieren items de compra');
   }
@@ -45,23 +52,32 @@ async function saveVenta({ paypalOrderId, total, currency = 'MXN', status = 'COM
     throw new Error('Total inválido');
   }
 
+  const { ivaRate } = getTaxConfig();
+  const ivaAmount = roundMoney(totalNumber * ivaRate);
+  const totalConIva = roundMoney(totalNumber + ivaAmount);
+
   await runAsync('BEGIN TRANSACTION;');
   try {
     const insertPedidoSQL = `
       INSERT INTO pedido
-        (paypal_order_id, total, currency, status, receipt_xml, receipt_downloaded_at, raw_payload)
-      VALUES (?, ?, ?, ?, ?, ?, ?);
+        (paypal_order_id, total, iva_rate, iva_amount, total_con_iva, currency, status, receipt_xml, receipt_downloaded_at, raw_payload, user_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
     `;
 
-    const receiptDownloadedAt = receiptXml ? new Date().toISOString() : null;
+    // Ya no descargamos el XML en el cliente; se envía por correo.
+    const receiptDownloadedAt = null;
     const { lastID: pedidoId } = await runAsync(insertPedidoSQL, [
       paypalOrderId || null,
       totalNumber,
+      ivaRate,
+      ivaAmount,
+      totalConIva,
       currency,
       status,
       receiptXml || null,
       receiptDownloadedAt,
       rawPayload ? JSON.stringify(rawPayload) : null,
+      userId || null,
     ]);
 
     for (const item of normalizedItems) {

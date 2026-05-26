@@ -1,10 +1,11 @@
-import { Routes } from "express";
-import { verifyToken } from "../../middleware/auth.middleware";
-import { getUserProfile, updateUserProfile } from "../controllers/user.controller.js";
+const express = require('express');
+const { verifyToken } = require('../../middleware/auth.middleware');
+const { getUserProfile, updateUserProfile, getUserOrders } = require('../controller/user.controller');
 
-const router = Routes();
+const router = express.Router();
 
 router.get('/profile', verifyToken, getUserProfile);
 router.put('/profile', verifyToken, updateUserProfile);
+router.get('/orders', verifyToken, getUserOrders);
 
-export default router;
+module.exports = router;

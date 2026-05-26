@@ -5,6 +5,28 @@ const fs = require('fs');
 
 const DB_PATH = path.join(__dirname, 'database.db');
 
+function ensureColumnExists(db, table, column, definition, callback) {
+    db.all(`PRAGMA table_info(${table});`, (err, rows) => {
+        if (err) return callback(err);
+        const exists = rows.some((columnInfo) => columnInfo.name === column);
+        if (exists) return callback(null);
+        db.run(`ALTER TABLE ${table} ADD COLUMN ${definition};`, callback);
+    });
+}
+
+function ensureColumns(db, checks, callback) {
+    let remaining = checks.length;
+    if (remaining === 0) return callback(null);
+
+    checks.forEach(({ table, column, definition }) => {
+        ensureColumnExists(db, table, column, definition, (err) => {
+            if (err) return callback(err);
+            remaining -= 1;
+            if (remaining === 0) callback(null);
+        });
+    });
+}
+
 function initializeDatabase() {
     const databaseExists = fs.existsSync(DB_PATH);
     const db = new sqlite3.Database(DB_PATH, (err) => {
@@ -24,6 +46,9 @@ function initializeDatabase() {
                 username TEXT UNIQUE NOT NULL,
                 email TEXT UNIQUE NOT NULL,
                 password TEXT NOT NULL,
+                full_name TEXT,
+                address TEXT,
+                postal_code TEXT,
                 created_at TEXT NOT NULL DEFAULT (datetime('now'))
             );
         `;
@@ -46,12 +71,17 @@ function initializeDatabase() {
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 paypal_order_id TEXT,
                 total REAL NOT NULL,
+                iva_rate REAL NOT NULL DEFAULT 0.16,
+                iva_amount REAL,
+                total_con_iva REAL,
                 currency TEXT NOT NULL DEFAULT 'MXN',
                 status TEXT,
                 created_at TEXT NOT NULL DEFAULT (datetime('now')),
                 receipt_xml TEXT,
                 receipt_downloaded_at TEXT,
-                raw_payload TEXT
+                raw_payload TEXT,
+                user_id INTEGER,
+                FOREIGN KEY (user_id) REFERENCES users(id)
             );
         `;
 
@@ -79,19 +109,35 @@ function initializeDatabase() {
                 process.exit(1);
             }
 
-            if (!databaseExists) {
-                seedInitialProductsV2(db).finally(() => db.close());
-                return;
-            }
+            ensureColumns(db, [
+                { table: 'users', column: 'full_name', definition: 'full_name TEXT' },
+                { table: 'users', column: 'address', definition: 'address TEXT' },
+                { table: 'users', column: 'postal_code', definition: 'postal_code TEXT' },
+                { table: 'pedido', column: 'user_id', definition: 'user_id INTEGER' },
+                { table: 'pedido', column: 'iva_rate', definition: 'iva_rate REAL NOT NULL DEFAULT 0.16' },
+                { table: 'pedido', column: 'iva_amount', definition: 'iva_amount REAL' },
+                { table: 'pedido', column: 'total_con_iva', definition: 'total_con_iva REAL' },
+            ], (columnErr) => {
+                if (columnErr) {
+                    console.error('Error asegurando columnas de la base de datos:', columnErr.message);
+                    db.close();
+                    process.exit(1);
+                }
 
-            db.get('SELECT COUNT(1) AS count FROM producto;', (err, row) => {
-                if (err) {
-                    console.error('Error verificando tabla producto:', err.message);
-                } else if (!row || row.count === 0) {
+                if (!databaseExists) {
                     seedInitialProductsV2(db).finally(() => db.close());
                     return;
                 }
-                db.close();
+
+                db.get('SELECT COUNT(1) AS count FROM producto;', (err, row) => {
+                    if (err) {
+                        console.error('Error verificando tabla producto:', err.message);
+                    } else if (!row || row.count === 0) {
+                        seedInitialProductsV2(db).finally(() => db.close());
+                        return;
+                    }
+                    db.close();
+                });
             });
         });
     });

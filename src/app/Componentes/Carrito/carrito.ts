@@ -1,7 +1,6 @@
 import { Component, inject, ChangeDetectorRef, AfterViewInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ProductoService } from '../../Servicios/producto.service';
-import { CarritoService } from '../../Servicios/carrito.service';
 import { Products } from '../../Modelos/producto.model';
 import { firstValueFrom } from 'rxjs';
 import { PaypalComponent } from '../PayPal/paypal';
@@ -15,7 +14,6 @@ import { PaypalComponent } from '../PayPal/paypal';
 })
 export class CarritoComponent {
   private productoService = inject(ProductoService);
-  private carritoService = inject(CarritoService);
   private cdr = inject(ChangeDetectorRef);
 
   cartItems: { product: Products; quantity: number; subtotal: number }[] = [];
@@ -136,10 +134,8 @@ export class CarritoComponent {
 
   // Handlers invoked by the child PayPal component
   async onPaypalApproved() {
-    // generar XML y limpiar carrito
-    this.carritoService.generateXML(this.productoService.getCart());
     this.productoService.clearCart();
-    this.paymentSuccess = 'Pago aprobado. Se descargó tu recibo en XML.';
+    this.paymentSuccess = 'Pago aprobado. Te enviamos el recibo por correo (incluye el XML).';
     this.loadCart();
     this.closeOverlay();
   }

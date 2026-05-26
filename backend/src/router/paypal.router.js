@@ -1,9 +1,10 @@
 const express = require('express');
 const controller = require('../controller/paypal.controller');
+const { verifyToken } = require('../../middleware/auth.middleware');
 const router = express.Router();
 
-router.post('/create-order', controller.createOrder);
-router.post('/capture-order', controller.captureOrder);
+router.post('/create-order', verifyToken, controller.createOrder);
+router.post('/capture-order', verifyToken, controller.captureOrder);
 
 // Expose client ID for frontend to load the PayPal SDK (safe to expose)
 router.get('/client-id', (req, res) => {

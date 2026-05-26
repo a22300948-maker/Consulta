@@ -1,0 +1,111 @@
+<div class="banner">
+  <h2><a routerLink="/" class="brand-link">Walmart Romano</a></h2>
+</div>
+
+<header class="header">
+  <div class="header-left">
+    <span class="auth-badge">Perfil</span>
+  </div>
+  <div class="header-right">
+    <a routerLink="/catalogo" class="home-link">← Volver al catálogo</a>
+    <button class="action-btn" (click)="logout()">Cerrar sesión</button>
+  </div>
+</header>
+
+<section class="profile-page">
+  <div class="profile-card">
+    <h1>Mi perfil</h1>
+    <p class="profile-note">Actualiza tus datos de contacto y dirección para tus próximas compras.</p>
+
+    <ng-container *ngIf="loading">
+      <div class="loading-card">Cargando tu perfil...</div>
+    </ng-container>
+
+    <ng-container *ngIf="!loading && profile">
+      <form (ngSubmit)="saveProfile()">
+        <label>
+          Usuario
+          <input type="text" [value]="profile.username" disabled />
+        </label>
+
+        <label>
+          Correo electrónico
+          <input type="email" [(ngModel)]="profileForm.email" name="email" required />
+        </label>
+
+        <label>
+          Nombre completo
+          <input type="text" [(ngModel)]="profileForm.fullName" name="fullName" placeholder="Ej. María Romano" />
+        </label>
+
+        <label>
+          Dirección
+          <input type="text" [(ngModel)]="profileForm.address" name="address" placeholder="Calle, colonia, número" />
+        </label>
+
+        <label>
+          C.P.
+          <input type="text" [(ngModel)]="profileForm.postalCode" name="postalCode" placeholder="Código postal" />
+        </label>
+
+        <div class="form-row">
+          <button type="submit" [disabled]="saving">{{ saving ? 'Guardando...' : 'Guardar cambios' }}</button>
+        </div>
+
+        <div *ngIf="message" class="success-message">{{ message }}</div>
+        <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
+      </form>
+    </ng-container>
+
+    <ng-container *ngIf="!loading && !profile">
+      <div class="error-message">{{ errorMessage || 'No se pudo cargar el perfil.' }}</div>
+    </ng-container>
+  </div>
+
+  <div class="orders-card">
+    <div class="orders-header">
+      <h2>Pedidos recientes</h2>
+      <p class="orders-note">Aquí verás los pagos realizados con tu cuenta.</p>
+    </div>
+
+    <div *ngIf="orders.length === 0" class="empty-orders">
+      Aún no has registrado pedidos. Compra algo y vuelve para verlo aquí.
+    </div>
+
+    <div *ngFor="let order of orders" class="order-item">
+      <div class="order-meta">
+        <span><strong>ID:</strong> {{ order.id }}</span>
+        <span><strong>Estado:</strong> {{ order.status }}</span>
+      </div>
+      <div class="order-meta">
+        <span><strong>Orden PayPal:</strong> {{ order.paypalOrderId || '—' }}</span>
+        <span><strong>Fecha:</strong> {{ order.createdAt | date:'medium' }}</span>
+      </div>
+
+      <div class="order-totals">
+        <div class="order-total-row">
+          <span>Total (sin IVA)</span>
+          <strong>${{ order.total.toFixed(2) }} {{ order.currency }}</strong>
+        </div>
+        <div class="order-total-row order-total-muted" *ngIf="order.ivaAmount !== undefined">
+          <span>IVA ({{ ((order.ivaRate ?? 0.16) * 100) | number:'1.0-0' }}%)</span>
+          <strong>${{ order.ivaAmount!.toFixed(2) }} {{ order.currency }}</strong>
+        </div>
+        <div class="order-total-row order-total-strong" *ngIf="order.totalConIva !== undefined">
+          <span>Total (con IVA)</span>
+          <strong>${{ order.totalConIva!.toFixed(2) }} {{ order.currency }}</strong>
+        </div>
+      </div>
+
+      <div class="order-products">
+        <div *ngFor="let item of order.items" class="order-product">
+          <div class="order-product-left">
+            <span class="order-product-name">{{ item.quantity }}× {{ item.itemName }}</span>
+            <span class="order-product-unit">$ {{ item.unitPrice.toFixed(2) }} c/u</span>
+          </div>
+          <span class="order-product-subtotal">$ {{ item.subtotal.toFixed(2) }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

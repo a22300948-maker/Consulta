@@ -108,6 +108,28 @@
 	box-shadow:0 12px 22px rgba(0,0,0,0.18);
 }
 
+.catalog-actions{
+	display:flex;
+	align-items:center;
+	gap:12px;
+}
+
+.profile-btn{
+	background:#d8b066;
+	color:#3a2310;
+	border:none;
+	padding:10px 18px;
+	border-radius:999px;
+	font-weight:700;
+	cursor:pointer;
+	transition:transform 0.2s ease, background 0.2s ease;
+}
+
+.profile-btn:hover{
+	transform:translateY(-1px);
+	background:#c79b4d;
+}
+
 .cart-button__icon{
 	display:inline-block;
 	width:22px;
