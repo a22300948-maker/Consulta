@@ -1,0 +1,45 @@
+<div class="banner">
+  <h2><a href="/" class="brand-link">Walmart Romano</a></h2>
+</div>
+
+<header class="header">
+  <h1>Administración</h1>
+  <p class="subtitle">Modificar stock de productos</p>
+  <button type="button" class="logout-btn" (click)="logout()">Cerrar sesión</button>
+</header>
+
+<section class="grid">
+  <div *ngIf="loading" class="no-products">Cargando productos...</div>
+  <div *ngIf="!loading && errorMessage" class="no-products">{{ errorMessage }}</div>
+
+  <ng-container *ngIf="!loading && !errorMessage">
+    <div *ngFor="let p of products" class="card">
+      <img class="img" [src]="p.imageUrl" [alt]="p.name" />
+
+      <div class="body">
+        <h2>{{ p.name }}</h2>
+        <p>$ {{ p.price.toFixed(2) }}</p>
+        <div class="meta">ID: {{ p.id }}</div>
+
+        <div class="stock-editor">
+          <label class="stock-label">Stock</label>
+          <div class="stock-row">
+            <input
+              class="stock-input"
+              type="number"
+              min="0"
+              [value]="stockDraft[p.id]"
+              (input)="onStockInput(p.id, $event)"
+            />
+            <button class="save-btn" (click)="saveStock(p)" [disabled]="saving[p.id]">
+              {{ saving[p.id] ? 'Guardando...' : 'Guardar' }}
+            </button>
+          </div>
+          <div class="status" *ngIf="statusMsg[p.id]">{{ statusMsg[p.id] }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="products.length === 0" class="no-products">No hay productos.</div>
+  </ng-container>
+</section>

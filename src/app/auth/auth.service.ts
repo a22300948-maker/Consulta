@@ -22,6 +22,28 @@ class AuthService {
     getToken(): string | null {
         return localStorage.getItem('token');
     }
+
+    getTokenPayload<T extends object = any>(): T | null {
+        const token = this.getToken();
+        if (!token) return null;
+
+        try {
+            const parts = token.split('.');
+            if (parts.length < 2) return null;
+            const b64Url = parts[1];
+            const b64 = b64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const padded = b64.padEnd(b64.length + ((4 - (b64.length % 4)) % 4), '=');
+            const json = atob(padded);
+            return JSON.parse(json) as T;
+        } catch {
+            return null;
+        }
+    }
+
+    isAdmin(): boolean {
+        const payload = this.getTokenPayload<any>();
+        return payload?.isAdmin === true || payload?.isAdmin === 1;
+    }
     logout(): void {
         localStorage.removeItem('token');
     }

@@ -10,8 +10,14 @@ exports.verifyToken = (req, res, next) => {
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET || 'consulta_secret');
         req.userId = decoded.id;
+        req.isAdmin = !!decoded.isAdmin;
         next();
     } catch (err) {
         return res.status(401).json({ message: 'Unauthorized' });
     }
+};
+
+exports.verifyAdmin = (req, res, next) => {
+    if (req.isAdmin) return next();
+    return res.status(403).json({ message: 'Admin privileges required' });
 };

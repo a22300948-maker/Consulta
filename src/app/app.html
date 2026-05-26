@@ -32,9 +32,10 @@
 	<div class="site-footer-inner">
 		<p class="brand">Walmart Romano</p>
 		<nav class="footer-links">
-				<a routerLink="/">Inicio</a>
-			<a routerLink="/catalogo">Catálogo</a>
-			<a routerLink="/carrito">Carrito</a>
+			<a *ngIf="!isAdminUser" routerLink="/">Inicio</a>
+			<a *ngIf="!isAdminUser" routerLink="/catalogo">Catálogo</a>
+			<a *ngIf="!isAdminUser" routerLink="/carrito">Carrito</a>
+			<a *ngIf="isAdminUser" routerLink="/admin">Admin</a>
 		</nav>
 		<p class="copy">© Walmart Romano</p>
 	</div>

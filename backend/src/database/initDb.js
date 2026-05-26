@@ -2,8 +2,62 @@
 const sqlite3 = require('sqlite3');
 const path = require('path');
 const fs = require('fs');
+const bcrypt = require('bcrypt');
 
 const DB_PATH = path.join(__dirname, 'database.db');
+
+function runAsync(db, sql, params = []) {
+    return new Promise((resolve, reject) => {
+        db.run(sql, params, function (err) {
+            if (err) return reject(err);
+            resolve({ lastID: this.lastID, changes: this.changes });
+        });
+    });
+}
+
+function getAsync(db, sql, params = []) {
+    return new Promise((resolve, reject) => {
+        db.get(sql, params, (err, row) => {
+            if (err) return reject(err);
+            resolve(row);
+        });
+    });
+}
+
+async function ensureAdminUser(db) {
+    const username = (process.env.ADMIN_USERNAME || '').trim();
+    const email = (process.env.ADMIN_EMAIL || '').trim();
+    const password = process.env.ADMIN_PASSWORD || '';
+
+    // Si no se configuró, no forzamos nada.
+    if (!username || !email || !password) {
+        console.warn('[initDb] ADMIN_USERNAME/ADMIN_EMAIL/ADMIN_PASSWORD no configurados; no se crea admin inicial.');
+        return;
+    }
+
+    const existing = await getAsync(
+        db,
+        'SELECT id, isAdmin FROM users WHERE username = ? OR email = ? LIMIT 1;',
+        [username, email]
+    );
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    if (existing?.id) {
+        await runAsync(
+            db,
+            'UPDATE users SET isAdmin = 1, password = ? WHERE id = ?;',
+            [hashedPassword, existing.id]
+        );
+        return;
+    }
+
+    await runAsync(
+        db,
+        'INSERT INTO users (username, email, password, isAdmin, created_at) VALUES (?, ?, ?, 1, datetime("now"));',
+        [username, email, hashedPassword]
+    );
+}
 
 function ensureColumnExists(db, table, column, definition, callback) {
     db.all(`PRAGMA table_info(${table});`, (err, rows) => {
@@ -46,6 +100,7 @@ function initializeDatabase() {
                 username TEXT UNIQUE NOT NULL,
                 email TEXT UNIQUE NOT NULL,
                 password TEXT NOT NULL,
+                isAdmin INTEGER NOT NULL DEFAULT 0,
                 full_name TEXT,
                 address TEXT,
                 postal_code TEXT,
@@ -113,6 +168,7 @@ function initializeDatabase() {
                 { table: 'users', column: 'full_name', definition: 'full_name TEXT' },
                 { table: 'users', column: 'address', definition: 'address TEXT' },
                 { table: 'users', column: 'postal_code', definition: 'postal_code TEXT' },
+                { table: 'users', column: 'isAdmin', definition: 'isAdmin INTEGER NOT NULL DEFAULT 0' },
                 { table: 'pedido', column: 'user_id', definition: 'user_id INTEGER' },
                 { table: 'pedido', column: 'iva_rate', definition: 'iva_rate REAL NOT NULL DEFAULT 0.16' },
                 { table: 'pedido', column: 'iva_amount', definition: 'iva_amount REAL' },
@@ -124,20 +180,26 @@ function initializeDatabase() {
                     process.exit(1);
                 }
 
-                if (!databaseExists) {
-                    seedInitialProductsV2(db).finally(() => db.close());
-                    return;
-                }
+                ensureAdminUser(db)
+                    .catch((adminErr) => {
+                        console.error('Error asegurando usuario admin inicial:', adminErr.message || adminErr);
+                    })
+                    .finally(() => {
+                        if (!databaseExists) {
+                            seedInitialProductsV2(db).finally(() => db.close());
+                            return;
+                        }
 
-                db.get('SELECT COUNT(1) AS count FROM producto;', (err, row) => {
-                    if (err) {
-                        console.error('Error verificando tabla producto:', err.message);
-                    } else if (!row || row.count === 0) {
-                        seedInitialProductsV2(db).finally(() => db.close());
-                        return;
-                    }
-                    db.close();
-                });
+                        db.get('SELECT COUNT(1) AS count FROM producto;', (err, row) => {
+                            if (err) {
+                                console.error('Error verificando tabla producto:', err.message);
+                            } else if (!row || row.count === 0) {
+                                seedInitialProductsV2(db).finally(() => db.close());
+                                return;
+                            }
+                            db.close();
+                        });
+                    });
             });
         });
     });

@@ -53,7 +53,7 @@ exports.login = (req, res) => {
   }
 
   const db = openDatabase();
-  db.get('SELECT id, username, password FROM users WHERE username = ?', [username], (err, user) => {
+  db.get('SELECT id, username, password, isAdmin FROM users WHERE username = ?', [username], (err, user) => {
     if (err) {
       db.close();
       return res.status(500).json({ message: 'Error del servidor al buscar el usuario.' });
@@ -70,7 +70,7 @@ exports.login = (req, res) => {
         return res.status(401).json({ message: 'Usuario o contraseña incorrectos.' });
       }
 
-      const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '1h' });
+      const token = jwt.sign({ id: user.id, username: user.username, isAdmin: user.isAdmin === 1 }, JWT_SECRET, { expiresIn: '1h' });
       return res.status(200).json({ message: 'Login successful', token });
     });
   });

@@ -4,6 +4,7 @@ import { RouterOutlet } from '@angular/router';
 import { ProductoService } from './Servicios/producto.service';
 import { ModalService } from './Servicios/modal.service';
 import { Products } from './Modelos/producto.model';
+import { AuthService } from './auth/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -21,7 +22,12 @@ export class App {
   toastVisible = false;
   private modalPendingQty = '';
 
-  constructor(private productoService: ProductoService, private modalService: ModalService, private zone: NgZone) {
+  constructor(
+    private productoService: ProductoService,
+    private modalService: ModalService,
+    private zone: NgZone,
+    private authService: AuthService
+  ) {
     // Mensajes generales del carrito (eliminar/vaciar)
     this.productoService.cartNotify$.subscribe((msg) => this.showToast(msg));
     // Modal product details
@@ -29,6 +35,10 @@ export class App {
       this.selectedProduct = p;
       this.modalVisible = !!p;
     });
+  }
+
+  get isAdminUser() {
+    return this.authService.isAdmin();
   }
 
   showToast(msg: string) {
