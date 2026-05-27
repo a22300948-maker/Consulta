@@ -6,9 +6,21 @@ import { adminGuard } from './core/guards/admin.guard';
 import { nonAdminGuard } from './core/guards/non-admin.guard';
 
 export const routes: Routes = [
-  { path: '', component: CatalogoComponent, canActivate: [authGuard, nonAdminGuard] },
-  { path: 'catalogo', component: CatalogoComponent, canActivate: [authGuard, nonAdminGuard] },
-  { path: 'carrito', component: CarritoComponent, canActivate: [authGuard, nonAdminGuard] },
+  {
+    path: '',
+    component: CatalogoComponent,
+    canActivate: [authGuard, nonAdminGuard]
+  },
+  {
+    path: 'catalogo',
+    component: CatalogoComponent,
+    canActivate: [authGuard, nonAdminGuard]
+  },
+  {
+    path: 'carrito',
+    component: CarritoComponent,
+    canActivate: [authGuard, nonAdminGuard]
+  },
   {
     path: 'aviso-privacidad',
     loadComponent: () => import('./Componentes/Legal/privacidad').then(m => m.AvisoPrivacidadComponent)
@@ -40,5 +52,8 @@ export const routes: Routes = [
     loadComponent: () => import('./Componentes/History/history').then(m => m.HistoryComponent),
     canActivate: [authGuard, nonAdminGuard]
   },
-  { path: '**', redirectTo: 'registro' }
+  {
+    path: '**',
+    redirectTo: 'registro'
+  }
 ];
