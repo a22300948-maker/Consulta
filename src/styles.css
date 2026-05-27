@@ -17,6 +17,7 @@ a { color: inherit; }
 .site-footer {
 	background: linear-gradient(180deg, #efe6d1, #e9dbc4);
 	border-top: 1px solid #d4b483;
+  margin-top: 0;
 	padding: 18px 12px;
 	text-align: center;
 	color: #5a3e1b;
@@ -133,5 +134,3 @@ button { font-family: inherit; }
 .product-modal .modal-stock { font-weight: bold; margin-bottom: 8px; }
 .product-modal .modal-stock.in-stock { color: green; }
 .product-modal .modal-stock.out-of-stock { color: red; }
-
-

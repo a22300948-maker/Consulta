@@ -53,15 +53,12 @@ export class CatalogoComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    // Clear any browser-autofill or leftover value in the search input
     try {
       const input = document.getElementById('catalog-search-input') as HTMLInputElement | null;
       if (input) {
-        // ensure the input reflects the component state (avoid browser autofill restoring weird values)
         input.value = this.searchQuery || '';
       }
     } catch (e) {
-      // ignore
     }
     this.cdr.detectChanges();
   }
