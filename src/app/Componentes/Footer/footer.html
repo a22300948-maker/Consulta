@@ -1,0 +1,14 @@
+<footer class="site-footer">
+  <div class="site-footer-inner">
+    <p class="brand">Walmart Romano</p>
+    <nav class="footer-links" aria-label="Enlaces del pie de página">
+      <a *ngIf="!isAdminUser" href="/">Inicio</a>
+      <a *ngIf="!isAdminUser" href="/catalogo">Catálogo</a>
+      <a *ngIf="!isAdminUser" href="/carrito">Carrito</a>
+      <a href="/aviso-privacidad">Aviso de privacidad</a>
+      <a href="/terminos-condiciones">Términos y condiciones</a>
+      <a *ngIf="isAdminUser" href="/admin">Admin</a>
+    </nav>
+    <p class="copy">© Walmart Romano</p>
+  </div>
+</footer>

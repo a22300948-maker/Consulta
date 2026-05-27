@@ -10,6 +10,14 @@ export const routes: Routes = [
   { path: 'catalogo', component: CatalogoComponent, canActivate: [authGuard, nonAdminGuard] },
   { path: 'carrito', component: CarritoComponent, canActivate: [authGuard, nonAdminGuard] },
   {
+    path: 'aviso-privacidad',
+    loadComponent: () => import('./Componentes/Legal/privacidad').then(m => m.AvisoPrivacidadComponent)
+  },
+  {
+    path: 'terminos-condiciones',
+    loadComponent: () => import('./Componentes/Legal/terminos').then(m => m.TerminosCondicionesComponent)
+  },
+  {
     path: 'admin',
     loadComponent: () => import('./Componentes/Admin/admin').then(m => m.AdminComponent),
     canActivate: [authGuard, adminGuard]

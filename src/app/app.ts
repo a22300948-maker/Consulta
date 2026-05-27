@@ -5,10 +5,11 @@ import { ProductoService } from './Servicios/producto.service';
 import { ModalService } from './Servicios/modal.service';
 import { Products } from './Modelos/producto.model';
 import { AuthService } from './auth/auth.service';
+import { FooterComponent } from './Componentes/Footer/footer';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, CommonModule],
+  imports: [RouterOutlet, CommonModule, FooterComponent],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
