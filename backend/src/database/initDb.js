@@ -101,6 +101,9 @@ function initializeDatabase() {
                 email TEXT UNIQUE NOT NULL,
                 password TEXT NOT NULL,
                 isAdmin INTEGER NOT NULL DEFAULT 0,
+                reset_code_hash TEXT,
+                reset_code_expires_at INTEGER,
+                reset_code_sent_at INTEGER,
                 full_name TEXT,
                 address TEXT,
                 postal_code TEXT,
@@ -169,10 +172,14 @@ function initializeDatabase() {
                 { table: 'users', column: 'address', definition: 'address TEXT' },
                 { table: 'users', column: 'postal_code', definition: 'postal_code TEXT' },
                 { table: 'users', column: 'isAdmin', definition: 'isAdmin INTEGER NOT NULL DEFAULT 0' },
+                { table: 'users', column: 'reset_code_hash', definition: 'reset_code_hash TEXT' },
+                { table: 'users', column: 'reset_code_expires_at', definition: 'reset_code_expires_at INTEGER' },
+                { table: 'users', column: 'reset_code_sent_at', definition: 'reset_code_sent_at INTEGER' },
                 { table: 'pedido', column: 'user_id', definition: 'user_id INTEGER' },
                 { table: 'pedido', column: 'iva_rate', definition: 'iva_rate REAL NOT NULL DEFAULT 0.16' },
                 { table: 'pedido', column: 'iva_amount', definition: 'iva_amount REAL' },
                 { table: 'pedido', column: 'total_con_iva', definition: 'total_con_iva REAL' },
+                { table: 'producto', column: 'is_active', definition: 'is_active INTEGER NOT NULL DEFAULT 1' },
             ], (columnErr) => {
                 if (columnErr) {
                     console.error('Error asegurando columnas de la base de datos:', columnErr.message);

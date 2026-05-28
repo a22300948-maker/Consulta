@@ -7,4 +7,5 @@ export interface Products{
     sDescription: string;
     description: string;
     inStock: number;
+    isActive?: number;
 }

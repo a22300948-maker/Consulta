@@ -242,6 +242,58 @@ function createTransporter() {
   return { transporter, config: cfg, reason: null };
 }
 
+function buildPasswordResetCodeHtml({ username, code, minutes }) {
+  const safeUser = escapeHtml(username || '');
+  const safeCode = escapeHtml(code || '');
+  const mins = Number(minutes);
+  const safeMinutes = Number.isFinite(mins) ? mins : 10;
+
+  return `
+  <div style="margin:0;padding:0;background:#fbf7f0;font-family:Georgia,'Times New Roman',serif;color:#3b2f2f;">
+    <div style="max-width:680px;margin:0 auto;padding:24px 12px;">
+      <div style="background:#5a3e1b;color:#f8f1e5;border-radius:14px;padding:18px 18px;border:1px solid #d4b483;">
+        <div style="font-size:20px;font-weight:800;letter-spacing:1px;font-family:Georgia,serif;">Walmart Romano</div>
+        <div style="opacity:.95;margin-top:6px;">Recuperación de contraseña</div>
+      </div>
+
+      <div style="background:#fffdf8;border-radius:14px;padding:18px;margin-top:12px;border:1px solid #d7c5a3;">
+        <p style="margin:0 0 10px 0;color:#5a3e1b;font-weight:800;">${safeUser ? `Hola, ${safeUser}.` : 'Hola.'}</p>
+        <p style="margin:0 0 14px 0;color:#6d5848;line-height:1.5;">Recibimos una solicitud para restablecer tu contraseña. Usa este código para confirmar el cambio.</p>
+
+        <div style="background:#fff8e7;border:1px solid #d4b483;border-radius:16px;padding:16px;text-align:center;">
+          <div style="color:#7a5b3b;font-size:12px;letter-spacing:1px;text-transform:uppercase;">Código</div>
+          <div style="margin-top:8px;font-size:34px;letter-spacing:6px;font-weight:900;color:#3a2310;">${safeCode}</div>
+          <div style="margin-top:10px;color:#6d5848;font-size:12px;">Este código expira en ${escapeHtml(safeMinutes)} minutos.</div>
+        </div>
+
+        <p style="margin:14px 0 0 0;color:#6d5848;font-size:12px;line-height:1.5;">Si tú no solicitaste este cambio, ignora este correo. Tu contraseña actual seguirá siendo válida.</p>
+      </div>
+
+      <div style="margin-top:10px;color:#7a5b3b;font-size:12px;text-align:center;">
+        © ${new Date().getFullYear()} Walmart Romano
+      </div>
+    </div>
+  </div>`;
+}
+
+async function sendPasswordResetCodeEmail({ to, username, code, minutes }) {
+  const { transporter, config, reason } = createTransporter();
+  if (!transporter) {
+    console.warn('[mail] Envío omitido:', reason);
+    return { ok: false, skipped: true, reason };
+  }
+
+  const html = buildPasswordResetCodeHtml({ username, code, minutes });
+  const info = await transporter.sendMail({
+    from: config.from,
+    to,
+    subject: 'Recuperar contraseña - Walmart Romano',
+    html,
+  });
+
+  return { ok: true, messageId: info.messageId };
+}
+
 async function sendOrderReceiptEmail({ to, subject, html, xml, xmlFilename }) {
   const { transporter, config, reason } = createTransporter();
   if (!transporter) {
@@ -273,4 +325,5 @@ module.exports = {
   buildReceiptXml,
   buildReceiptHtml,
   sendOrderReceiptEmail,
+  sendPasswordResetCodeEmail,
 };

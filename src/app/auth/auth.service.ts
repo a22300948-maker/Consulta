@@ -16,6 +16,14 @@ class AuthService {
     register(username: string, email: string, password: string): Observable<any> {
         return this.http.post(`${this.apiUrl}/register`, { username, email, password });
     }
+
+    requestPasswordReset(identifier: string): Observable<{ message?: string; debugCode?: string }> {
+        return this.http.post<{ message?: string; debugCode?: string }>(`${this.apiUrl}/forgot-password`, { identifier });
+    }
+
+    resetPassword(identifier: string, code: string, newPassword: string): Observable<{ message?: string }> {
+        return this.http.post<{ message?: string }>(`${this.apiUrl}/reset-password`, { identifier, code, newPassword });
+    }
     saveToken(token: string): void {
         localStorage.setItem('token', token);
     }
