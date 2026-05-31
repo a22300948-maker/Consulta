@@ -98,6 +98,30 @@ textarea {
   min-height: 120px;
 }
 
+select,
+.styled-select {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #d9c29a;
+  border-radius: 14px;
+  padding: 12px 14px;
+  font: inherit;
+  background: #fffaf1;
+  color: #3f2f1c;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+select:focus,
+.styled-select:focus {
+  outline: none;
+  border-color: #f6c96e;
+  box-shadow: 0 0 0 6px rgba(246,201,110,0.12);
+}
+
+select option { text-transform: capitalize; }
+
 .two-cols {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

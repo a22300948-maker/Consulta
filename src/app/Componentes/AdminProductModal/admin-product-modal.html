@@ -37,7 +37,10 @@
 
       <label>
         Categoría
-        <input name="category" [(ngModel)]="form.category" placeholder="Categoría" [disabled]="loading" />
+        <select name="category" [(ngModel)]="form.category" [disabled]="loading" class="styled-select">
+          <option value="">Seleccione categoría</option>
+          <option *ngFor="let cat of categories" [value]="cat">{{ (cat && cat.length) ? (cat[0].toUpperCase() + cat.slice(1)) : cat }}</option>
+        </select>
       </label>
 
       <label>

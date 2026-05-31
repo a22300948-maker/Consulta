@@ -8,7 +8,7 @@
     <div class="catalog-filter">
         <select id="category-select" class="category-select" (change)="onCategoryChange($any($event.target).value)">
             <option value="">Todas las categorías</option>
-            <option *ngFor="let cat of categories" [value]="cat">{{cat}}</option>
+            <option *ngFor="let cat of categories" [value]="cat">{{ (cat && cat.length) ? (cat[0].toUpperCase() + cat.slice(1)) : cat }}</option>
         </select>
     </div>
 

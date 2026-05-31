@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Products } from '../../Modelos/producto.model';
+import { ProductoService } from '../../Servicios/producto.service';
 
 export interface AdminProductModalResult {
   name: string;
@@ -20,7 +21,7 @@ export interface AdminProductModalResult {
   templateUrl: './admin-product-modal.html',
   styleUrls: ['./admin-product-modal.css'],
 })
-export class AdminProductModalComponent implements OnChanges {
+export class AdminProductModalComponent implements OnChanges, OnInit {
   @Input() open = false;
   @Input() product: Products | null = null;
   @Input() loading = false;
@@ -31,12 +32,26 @@ export class AdminProductModalComponent implements OnChanges {
 
   form = this.buildEmptyForm();
   errorMessage = '';
+  categories: string[] = [];
+  private productoService = inject(ProductoService);
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['product'] || changes['open']) {
       this.form = this.buildFormFromProduct(this.product);
       this.errorMessage = '';
     }
+  }
+
+  ngOnInit(): void {
+    // Load categories derived from existing products (normalize to lowercase)
+    this.productoService.getCategoriesFromApi().subscribe({
+      next: list => {
+        this.categories = (list || []).map(c => (c || '').toLowerCase()).filter(Boolean).sort();
+      },
+      error: () => {
+        this.categories = [];
+      }
+    });
   }
 
   close(): void {
@@ -47,7 +62,7 @@ export class AdminProductModalComponent implements OnChanges {
     this.errorMessage = '';
 
     const name = this.form.name.trim();
-    const category = this.form.category.trim();
+    const category = (this.form.category || '').trim().toLowerCase();
     const imageUrl = this.form.imageUrl.trim();
     const sDescription = this.form.sDescription.trim();
     const description = this.form.description.trim();
@@ -102,7 +117,7 @@ export class AdminProductModalComponent implements OnChanges {
       name: product.name ?? '',
       price: product.price ?? 0,
       imageUrl: product.imageUrl ?? '',
-      category: product.category ?? '',
+      category: (product.category ?? '').toLowerCase(),
       sDescription: product.sDescription ?? '',
       description: product.description ?? '',
       inStock: typeof product.inStock === 'number' ? product.inStock : 0,

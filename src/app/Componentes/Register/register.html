@@ -19,27 +19,27 @@
         <form (ngSubmit)="submit()">
             <label>
                 Usuario
-                <input name="username" [(ngModel)]="username" placeholder="Nombre de usuario" autocomplete="username" />
+                <input name="username" [(ngModel)]="username" placeholder="Nombre de usuario" autocomplete="username" (input)="clearError()" />
             </label>
 
             <label>
                 Email
-                <input name="email" type="email" [(ngModel)]="email" placeholder="Correo electrónico" autocomplete="email" />
+                <input name="email" type="email" [(ngModel)]="email" placeholder="Correo electrónico" autocomplete="email" (input)="clearError()" />
             </label>
 
             <label>
                 Contraseña
-                <input name="password" type="password" [(ngModel)]="password" placeholder="Contraseña" autocomplete="new-password" />
+                <input name="password" type="password" [(ngModel)]="password" placeholder="Contraseña" autocomplete="new-password" (input)="clearError()" />
             </label>
 
             <label>
                 Repetir contraseña
-                <input name="confirmPassword" type="password" [(ngModel)]="confirmPassword" placeholder="Repite contraseña" autocomplete="new-password" />
+                <input name="confirmPassword" type="password" [(ngModel)]="confirmPassword" placeholder="Repite contraseña" autocomplete="new-password" (input)="clearError()" />
             </label>
 
             <div *ngIf="errorMessage" class="auth-error">{{ errorMessage }}</div>
 
-            <button type="submit" [disabled]="loading">{{ loading ? 'Creando cuenta...' : 'Crear cuenta' }}</button>
+            <button type="submit" [disabled]="loading" [class.error-state]="hasError">{{ loading ? 'Creando cuenta...' : 'Crear cuenta' }}</button>
 
             <p class="auth-note">¿Ya tienes una cuenta? <a routerLink="/login">Inicia sesión</a></p>
         </form>

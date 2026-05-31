@@ -21,6 +21,11 @@ export class ProductoService {
   getAllFromApi(): Observable<Products[]> {
     return this.http.get<Products[]>(this.apiUrl);
   }
+
+  getCategoriesFromApi(): Observable<string[]> {
+    const url = this.apiUrl.replace(/\/productos$/, '/categorias');
+    return this.http.get<string[]>(url);
+  }
   private cart: Products[] = [];
 
   constructor() {

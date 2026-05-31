@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const { verifyToken, verifyAdmin } = require('../../middleware/auth.middleware');
-const { getProductos, getProductosAdmin, getProductoById, createProduct, updateProduct, deleteProduct, setProductActive, updateProductStock } = require('../controller/producto.controller');
+const { getProductos, getProductosAdmin, getProductoById, createProduct, updateProduct, deleteProduct, setProductActive, updateProductStock, getCategorias} = require('../controller/producto.controller');
 
 // Public
+router.get('/categorias', getCategorias);
 router.get('/productos', getProductos);
 router.get('/productos/:id', getProductoById);
 

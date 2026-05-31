@@ -29,7 +29,7 @@
         <h2>{{ p.name }}</h2>
         <p>$ {{ p.price.toFixed(2) }}</p>
         <div class="meta">ID: {{ p.id }}</div>
-        <div class="meta">{{ p.category }}</div>
+        <div class="meta">{{ (p.category && p.category.length) ? (p.category[0].toUpperCase() + p.category.slice(1)) : p.category }}</div>
         <p class="short-description">{{ p.sDescription }}</p>
 
         <div class="card-actions">

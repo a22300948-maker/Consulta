@@ -18,8 +18,7 @@ function normalizeIdentifier(value) {
 }
 
 function generateResetCode() {
-  const n = crypto.randomInt(0, 1_000_000);
-  return String(n).padStart(6, '0');
+  return crypto.randomBytes(3).toString('hex').toUpperCase();
 }
 
 function isValidResetCode(code) {
@@ -29,32 +28,56 @@ function isValidResetCode(code) {
 exports.register = (req, res) => {
   const { username, email, password } = req.body;
   if (!username || !email || !password) {
-    return res.status(400).json({ message: 'Faltan datos requeridos.' });
+    return res.status(400).json({ error: 'Faltan datos requeridos.', message: 'Faltan datos requeridos.' });
   }
 
   const db = openDatabase();
   db.get('SELECT id FROM users WHERE username = ? OR email = ?', [username, email], (selectErr, row) => {
+    /////////////////
+    // VALIDATIONS //
+    /////////////////
     if (selectErr) {
       db.close();
-      return res.status(500).json({ message: 'Error del servidor al verificar el usuario.' });
+      return res.status(500).json({ error: 'Error del servidor al verificar el usuario.', message: 'Error del servidor al verificar el usuario.' });
     }
 
     if (row) {
       db.close();
-      return res.status(409).json({ message: 'El nombre de usuario o email ya está en uso.' });
+      return res.status(409).json({ error: 'El nombre de usuario o email ya está en uso.', message: 'El nombre de usuario o email ya está en uso.' });
+    }
+    // username needs to be 3-20 chars, only letters, numbers, underscores:
+    if (!/^[a-zA-Z0-9_]{3,20}$/.test(username)) {
+      db.close();
+      return res.status(400).json({ error: 'El nombre de usuario debe tener 3-20 caracteres y solo puede contener letras, números y guiones bajos.', message: 'El nombre de usuario debe tener 3-20 caracteres y solo puede contener letras, números y guiones bajos.' });
+    }
+    // Basic email format check:
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      db.close();
+      return res.status(400).json({ error: 'Formato de email inválido.', message: 'Formato de email inválido.' });
+    }
+    // Password needs to be at least 6 chars, no spaces, contain one cap, one lower, one number and one special char:
+    if (password.length < 6 || /\s/.test(password) || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password) || !/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+      db.close();
+      return res.status(400).json({ error: 'La contraseña debe tener al menos 6 caracteres, no contener espacios y debe incluir mayúsculas, minúsculas, números y caracteres especiales.', message: 'La contraseña debe tener al menos 6 caracteres, no contener espacios y debe incluir mayúsculas, minúsculas, números y caracteres especiales.' });
     }
 
+    // Hash password and insert user:
     bcrypt.hash(password, 10, (hashErr, hashedPassword) => {
       if (hashErr) {
         db.close();
-        return res.status(500).json({ message: 'Error al procesar la contraseña.' });
+        return res.status(500).json({ error: 'Error al procesar la contraseña.', message: 'Error al procesar la contraseña.' });
       }
 
       const insertSql = 'INSERT INTO users (username, email, password, created_at) VALUES (?, ?, ?, datetime("now"));';
       db.run(insertSql, [username, email, hashedPassword], function (insertErr) {
         db.close();
         if (insertErr) {
-          return res.status(500).json({ message: 'Error guardando el usuario.' });
+          // Handle unique constraint violations explicitly
+          const msg = String(insertErr.message || 'Error guardando el usuario.');
+          if (/unique|constraint/i.test(msg)) {
+            return res.status(409).json({ error: 'El nombre de usuario o email ya está en uso.', message: 'El nombre de usuario o email ya está en uso.' });
+          }
+          return res.status(500).json({ error: 'Error guardando el usuario.', message: 'Error guardando el usuario.' });
         }
         return res.status(201).json({ message: 'Usuario creado correctamente.' });
       });
@@ -65,28 +88,28 @@ exports.register = (req, res) => {
 exports.login = (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) {
-    return res.status(400).json({ message: 'Nombre de usuario y contraseña son requeridos.' });
+    return res.status(400).json({ error: 'Nombre de usuario y contraseña son requeridos.', message: 'Nombre de usuario y contraseña son requeridos.' });
   }
 
   const db = openDatabase();
   db.get('SELECT id, username, password, isAdmin FROM users WHERE username = ?', [username], (err, user) => {
     if (err) {
       db.close();
-      return res.status(500).json({ message: 'Error del servidor al buscar el usuario.' });
+      return res.status(500).json({ error: 'Error del servidor al buscar el usuario.', message: 'Error del servidor al buscar el usuario.' });
     }
 
     if (!user) {
       db.close();
-      return res.status(401).json({ message: 'Usuario o contraseña incorrectos.' });
+      return res.status(401).json({ error: 'Usuario o contraseña incorrectos.', message: 'Usuario o contraseña incorrectos.' });
     }
 
     bcrypt.compare(password, user.password, (compareErr, validPassword) => {
       db.close();
       if (compareErr || !validPassword) {
-        return res.status(401).json({ message: 'Usuario o contraseña incorrectos.' });
+        return res.status(401).json({ error: 'Usuario o contraseña incorrectos.', message: 'Usuario o contraseña incorrectos.' });
       }
 
-      const token = jwt.sign({ id: user.id, username: user.username, isAdmin: user.isAdmin === 1 }, JWT_SECRET, { expiresIn: '1h' });
+      const token = jwt.sign({ id: user.id, username: user.username, isAdmin: user.isAdmin === 1 }, JWT_SECRET, { expiresIn: '8h' });
       return res.status(200).json({ message: 'Login successful', token });
     });
   });

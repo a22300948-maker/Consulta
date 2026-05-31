@@ -212,4 +212,15 @@ const updateProductStock = (req, res) => {
     });
 };
 
-module.exports = { getProductos, getProductosAdmin, getProductoById, createProduct, updateProduct, deleteProduct, setProductActive, updateProductStock };
+const getCategorias = (req, res) => {
+    const sql = `SELECT DISTINCT LOWER(TRIM(category)) AS category FROM producto WHERE category IS NOT NULL AND TRIM(category) != '' ORDER BY category COLLATE NOCASE;`;
+    db.all(sql, (err, rows) => {
+        if (err) return res.status(500).json({ error: 'Error al obtener las categorías' });
+        const cats = (rows || []).map(r => r.category).filter(Boolean);
+        // ensure unique and sorted
+        const unique = [...new Set(cats)].sort((a,b) => a.localeCompare(b));
+        res.json(unique);
+    });
+};
+
+module.exports = { getProductos, getProductosAdmin, getProductoById, createProduct, updateProduct, deleteProduct, setProductActive, updateProductStock, getCategorias };

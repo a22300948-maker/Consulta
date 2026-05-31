@@ -193,3 +193,17 @@ button:disabled {
     font-weight: 500;
     box-sizing: border-box;
 }
+
+button.error-state {
+    background: #a13f2d !important;
+    background-color: #a13f2d !important;
+    color: #fff !important;
+    box-shadow: none !important;
+    background-image: none !important;
+    border: 1px solid #7f2b23 !important;
+    -webkit-text-fill-color: #fff !important;
+}
+
+button.error-state:hover:not(:disabled) {
+    background: #8f2f23 !important;
+}

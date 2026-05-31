@@ -35,9 +35,21 @@ export class CatalogoComponent implements OnInit, OnDestroy, AfterViewInit {
     this.productoService.getAllFromApi().subscribe({
       next: list => {
         this.products = list || [];
-        this.categories = [...new Set(this.products.map(p => p.category))].sort();
-        this.applySearch();
-        this.cdr.detectChanges();
+        // Prefer server-provided categories list for robustness
+        this.productoService.getCategoriesFromApi().subscribe({
+          next: cats => {
+            this.categories = (cats || []).map(c => (c || '').toLowerCase()).filter(Boolean).sort();
+            this.applySearch();
+            this.cdr.detectChanges();
+          },
+          error: () => {
+            // Fallback to deriving from products
+            this.categories = [...new Set(this.products.map(p => (p.category || '').toLowerCase()).filter(c => c))].sort();
+            this.applySearch();
+            this.cdr.detectChanges();
+          }
+        });
+        
       },
       error: err => {
         console.error('Error cargando productos desde API:', err);
