@@ -94,10 +94,10 @@ export class ForgotPasswordComponent implements OnInit {
       });
       return;
     }
-
-    if (!/^\d{6}$/.test(code)) {
+    
+    if (!/^[a-zA-Z0-9]{6}$/.test(code)) {
       this.zone.run(() => {
-        this.errorMessage = 'El código debe tener 6 dígitos.';
+        this.errorMessage = 'El código debe tener 6 caracteres alfanuméricos.';
         this.cdr.markForCheck();
       });
       return;

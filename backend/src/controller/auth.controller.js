@@ -22,7 +22,7 @@ function generateResetCode() {
 }
 
 function isValidResetCode(code) {
-  return typeof code === 'string' && /^\d{6}$/.test(code);
+  return typeof code === 'string' && /^[a-zA-Z0-9]{6}$/.test(code);
 }
 
 exports.register = (req, res) => {
