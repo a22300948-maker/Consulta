@@ -1,5 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { finalize } from 'rxjs/operators';
+import { finalize, catchError } from 'rxjs/operators';
+import { throwError } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -39,9 +40,21 @@ export class LoginComponent implements OnInit {
 
     this.loading = true;
     this.authService.login(this.username.trim(), this.password).pipe(
-      finalize(() => { this.loading = false; })
+      catchError((error: unknown) => {
+        console.error('[login.ts] Error capturado en catchError:', error);
+        this.hasError = true;
+        const e = error as any;
+        this.errorMessage = e?.error?.message || e?.error?.error || e?.message || 'Error en el inicio de sesión.';
+        console.error('[login.ts] errorMessage asignado:', this.errorMessage);
+        return throwError(() => error);
+      }),
+      finalize(() => {
+        console.log('[login.ts] finalize: reseteando loading a false');
+        this.loading = false;
+      })
     ).subscribe({
       next: (response: { token?: string }) => {
+        console.log('[login.ts] next: respuesta recibida', response);
         if (response?.token) {
           this.hasError = false;
           this.authService.saveToken(response.token);
@@ -52,9 +65,11 @@ export class LoginComponent implements OnInit {
         }
       },
       error: (error: unknown) => {
+        console.error('[login.ts] error handler ejecutado', error);
         this.hasError = true;
         const e = error as any;
         this.errorMessage = e?.error?.message || e?.error?.error || e?.message || 'Error en el inicio de sesión.';
+        console.error('[login.ts] errorMessage reafirmado en error handler:', this.errorMessage);
       }
     });
   }
